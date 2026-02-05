@@ -1,0 +1,20 @@
+In this document are explained the steps to update the calib values.
+
+The good format for calib constant is : 'amp_p0', 'amp_p0_e', 'mu_p0', 'mu_p0_e', 'sigma_p0', 'sigma_p0_e', 'amp_p1', 'amp_p1_e', 'mu_p1', 'mu_p1_e', 'sigma_p1', 'sigma_p1_e', 'amp_p2', 'amp_p2_e', 'mu_p2', 'mu_p2_e', 'sigma_p2', 'sigma_p2_e'
+
+Call the file : 'calibrun_MINRUN-MAXRUN_parameters_1PEfit.txt'
+
+1. Use the calib constant in the good format inside calib_constant folder
+run CreatePlot_and_updateDB_conf.ipynb and update 'fileruns' with MINRUN and 'dates'
+
+2. Inside CreateTable folder execute GenerateTables.ipynb (update 'runs' before with MINRUN)
+
+3. Execute Create sqlite3table.ipynb
+this hsould result in a localdb.GaP.sqlite3 file that you have to copy in your /gres/database folder
+
+You have to copy this file in your local computer and the computer where the data processing is made.
+Source again gres in your terminals.
+
+The convserion between adc and pes happens during the data processing, it means it is better to update this file properly before to process new data. 
+If needed, it is possible to reprocess data with 
+source reprocess_data.sh initial_run end_run octavia_55Fe.conf
