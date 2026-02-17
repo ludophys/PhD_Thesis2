@@ -40,8 +40,6 @@ GaP::GaP():
 
     gas_element_("Xe"),
 
-    vessel_out_rad_    (288./2  *mm),
-    vessel_out_length_ (46.679  *cm),
     vessel_rad_        (276./2  *mm),
     vessel_length_     (38.599  *cm), // Adjusted length so that the gas volume is centered. Original length (38.639  *cm),
 
@@ -70,8 +68,6 @@ GaP::GaP():
     pmtHolder_rad_        (115./2  *mm),
     pmtHolder_length_     (9.      *mm),
 
-    quartz_window_rad_    (108./2  *mm),
-    quartz_window_thickn_ (3       *mm),
     tpb_coating_thickn_   (3       *micrometer),
 
     photoe_prob_       (0.),
@@ -330,167 +326,214 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4double pmt_length_ = pmt_.Length();
     G4double pmt_z  = 42.495*mm + pmt_length_/2;
 
-    //Gas
-    /*G4double drift_length_  = 87.*mm;
-    G4double el_length_     = 10.2*mm + mesh_thickn_; //10.2mm is the size of the el field + mesh_thckn_ in order to cover the gate and anode volumes + 0.1mm to avoid overlaps
-    */
-    //G4double el_z = -28.42 * mm;
-   
-    //G4double anode_z = -40.495 * mm - el_z + (mesh_thickn_)/2; // distance between the boarder of the anode and the bottom plate of the PMTs of 2mm
-    
-    G4double anodeBracket_z = -pmt_z + pmt_length_/2 + 2. * mm + meshBracket_thickn_/2;
+    G4double tpb_coating_z = -pmt_z + pmt_length_/2 + tpb_coating_thickn_/2; // Z position of the surface of the PMTs
+
+    G4double anodeBracket_z = -pmt_z + pmt_length_/2 + 2. * mm + meshBracket_thickn_/2; // 2mm between end of PMTs and anode
     G4double anode_z = anodeBracket_z;
+
     G4double gateBracket_z = anode_z + anodeBracket_thickn_/2 + 10.2 * mm  + meshBracket_thickn_/2;// Distance between the borders of the gate and the anode of 10.2mm
     G4double gate_z = gateBracket_z; //Position to have the gate position at the gateBracket center
-    G4double cathBracket_z = gate_z + meshBracket_thickn_/2 + 87.0 * mm + meshBracket_thickn_/2; //posiiton to have the center of the cathBracket at the center of the cathode
-    G4double cathode_z = cathBracket_z; // position to have 87 mm between the boarder of the gate and the boarder of the cathode
+    
+    G4double cathBracket_z = gate_z + meshBracket_thickn_/2 + 87.0 * mm + meshBracket_thickn_/2; //87mm between Gate and Cathode
+    G4double cathode_z = cathBracket_z;
 
-    G4double el_z = (gate_z + meshBracket_thickn_/2) - ((gate_z + meshBracket_thickn_/2) - (anode_z - anodeBracket_thickn_/2))/2;
-    G4double el_length_     = (gate_z + meshBracket_thickn_/2) - (anode_z - anodeBracket_thickn_/2); //10.2mm is the size of the el field + mesh_thckn_ in order to cover the gate and anode volumes + 0.1mm to avoid overlaps
-    G4double drift_z = cathode_z - (cathode_z - gate_z)/2 + meshBracket_thickn_/2;
-    G4double drift_length_  = cathode_z - gate_z;
-  
+    G4double cath_gate = cathode_z - gate_z - meshBracket_thickn_;
+
+    G4double drift_z = cathode_z - (cathode_z - gate_z)/2 + meshBracket_thickn_/2; // Z position of Drift volume placed in the center of the gate and the cathode + meshBracket_thickn_/2 in order to not cover the gate (already covered by EL volume) and fully cover the cathode
+    G4double drift_length_  = cathode_z - gate_z; // Length of the Drift volume to of 87mm + cathode volume
+
+    G4double el_z = (gate_z + meshBracket_thickn_/2) - ((gate_z + meshBracket_thickn_/2) - (anode_z - anodeBracket_thickn_/2))/2; // Position of the center of the Gate - Anode distance 
+    G4double el_length_     = (gate_z + meshBracket_thickn_/2) - (anode_z - anodeBracket_thickn_/2); //Distance between Gate - Anode (both entirely covered by EL volume)
+
     G4double lightTube_rad_    = 120./2 *mm;
     G4double lightTube_thickn_ = 5.     *mm;
-    G4double lightTube_length_ = cathode_z - gate_z  - meshBracket_thickn_;
-    G4double lightTube_z       = drift_z;
+    G4double lightTube_z       = cathode_z - (cathode_z - gate_z)/2; // Z position of light tube right in the middle of cathode and gate
+    G4double lightTube_length_ = cathode_z - gate_z  - meshBracket_thickn_;// Light tube contained between cathode and gate
 
     G4double source_box_rad_ = 38. * mm;
     G4double source_box_thick_ = 3. * mm;
-    G4double source_box_z_ = cathode_z - meshBracket_thickn_/2 - source_box_thick_/2;
-    G4cout << "position of the vertex is : " << source_box_z_ << G4endl;
+
+    G4double cath_plate_rad_int_ = source_box_rad_; // Left plate of the light tube (hole in th center where we put the source box)
+    G4double cath_plate_rad_ext_ = lightTube_rad_; // Left plate of the light tube 
+    G4double cath_plate_length_ = lightTube_thickn_;
+    G4double cath_plate_z = lightTube_z + lightTube_length_/2 - cath_plate_length_/2; // Position of the plate on the left part of the light tube
+
+    G4double source_plate_rad_ = source_box_rad_; // Small hole on the left plate to put the source box
+    G4double source_plate_length_ = lightTube_thickn_/2 + 1.5*mm;
+    G4double source_plate_z = cath_plate_z  + cath_plate_length_/2 - source_plate_length_/2; // Position of the Small hole on the left plate to put the source box
+
+    G4double tpb_lightTube_rad_int_   = lightTube_rad_ - 0.003 * mm;
+    G4double tpb_lightTube_rad_ext_   = lightTube_rad_;
+    G4double tpb_lightTube_length_ = lightTube_length_ - cath_plate_length_;
+    G4double tpb_lightTube_z = lightTube_z - cath_plate_length_/2;
+
+    G4double source_box_z_ = source_plate_z - source_plate_length_/2 - source_box_thick_/2; // Source box placed on the small hole of the light tube
+
     G4double alu_foil_rad_ = source_box_rad_;
-    G4double alu_foil_thick_ = 0.008 * mm;
-    G4double alu_foil_z_ = source_box_z_ - source_box_thick_/2 - alu_foil_thick_/2;
+    G4double alu_foil_thick_ = 0.025 * mm;
+    G4double alu_foil_z_ = source_box_z_ - source_box_thick_/2 - alu_foil_thick_/2; // Z position of the surface of the source box
 
+    G4double rings_rad_int_ = 156*mm;
+    G4double rings_rad_ext_ = 166*mm;
+    G4double rings_length_ = 9*mm;
+    G4double rings_z = 0; //Defined in the loop to generate rings
 
-    G4cout << "Vertex is :" << cathode_z + 2*mm << G4endl;
-    G4cout << "distance test is :" << cathode_z - gate_z - mesh_thickn_ << G4endl;
+    /// Peek Mesh Holder (holds cathode and gate)
+    G4double meshHolder_length_    = 36.75     *mm;
+    G4double meshHolder_z = -13.005*mm + meshHolder_length_/2 ;
+    G4double meshHolderBar_rad_     = 9./2   *mm;
+    G4double meshHolderBar_length_  = 35.75  *mm;
+    G4double meshHolderBar_xy = 73.769*mm;
+    G4double meshHolderBar_z  = meshHolder_z + meshHolder_length_/2 + meshHolderBar_length_/2 ;
 
+    G4double enclosure_pmt_z = vessel_length_/2 - enclosure_pmt_length_/2;
+    G4double relative_pmt_z  = enclosure_pmt_z - pmt_z;
+
+    G4double enclosurevac_pmt_z = vessel_length_/2 - enclosurevac_pmt_length_/2;
+    G4double relativevac_pmt_z  = enclosurevac_pmt_z - pmt_z;
+
+    G4double pmtHolder_z = enclosurevac_pmt_length_/2 - pmtHolder_length_/2;
+    G4double plate1_pmt_z = enclosure_pmt_z - enclosure_pmt_length_/2 - plate_pmt_length_/2;
+    G4double plate0_pmt_z = 64.495 *mm;
+    G4double plateUp_pmt_rad_ = enclosure_pmt_rad_ + enclosure_pmt_thickn_;
+    G4double plateUp_pmt_z = vessel_length_/2 - plateUp_pmt_length_/2 ;
+
+    ////// Definition of the vessel (Cylinder that contains everything)
     G4Tubs          *solid_vessel = new G4Tubs("GasVessel", 0, vessel_rad_, vessel_length_/2 , 0., 360.*deg);
     G4LogicalVolume *logic_vessel = new G4LogicalVolume(solid_vessel, gas, "GasVessel");
     new G4PVPlacement(0, G4ThreeVector(), logic_vessel, "GasVessel", logic_vessel_steel, false, 0, true);
 
-    //// Drift
+  // Geometries contained in GasVessel volume
+
+    //Steel Bar joining Mesh holder and PMT clad (contained in GasVessel)
+    G4Tubs          *solid_meshHolderBar = new G4Tubs("MeshHolderBar", 0., meshHolderBar_rad_, (meshHolderBar_length_)/2, 0., 360.*deg);
+    G4LogicalVolume *logic_meshHolderBar = new G4LogicalVolume(solid_meshHolderBar, steel, "MeshHolderBar");
+
+    new G4PVPlacement(0, G4ThreeVector(meshHolderBar_xy, meshHolderBar_xy, -meshHolderBar_z), logic_meshHolderBar, "MeshHolderBarA", logic_vessel, false, 0, true);
+    new G4PVPlacement(0, G4ThreeVector(-meshHolderBar_xy, meshHolderBar_xy, -meshHolderBar_z), logic_meshHolderBar, "MeshHolderBarB", logic_vessel, false, 1, true);
+    new G4PVPlacement(0, G4ThreeVector(meshHolderBar_xy, -meshHolderBar_xy, -meshHolderBar_z), logic_meshHolderBar, "MeshHolderBarC", logic_vessel, false, 2, true);
+    new G4PVPlacement(0, G4ThreeVector(-meshHolderBar_xy, -meshHolderBar_xy, -meshHolderBar_z), logic_meshHolderBar, "MeshHolderBarD", logic_vessel, false, 3, true);
+
+    //// Drift (contained in GasVessel)
     G4Tubs          *solid_gas_drift = new G4Tubs("GasDrift", 0., meshBracket_rad_, (drift_length_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_gas_drift = new G4LogicalVolume(solid_gas_drift, gas, "GasDrift");
+    G4VPhysicalVolume* drift_phys_ = new G4PVPlacement(0, G4ThreeVector(0., 0., drift_z), logic_gas_drift, "GasDrift", logic_vessel, false, 0, true);
 
-     // Cathode Bracket
+    // Geomtries contained in GasDrift volume
+
+     // Cathode Bracket (in "GasDrift" volume)
     G4Tubs          *solid_cathBracket = new G4Tubs("CathodeBracket", mesh_rad_, meshBracket_rad_, (meshBracket_thickn_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_cathBracket = new G4LogicalVolume(solid_cathBracket, steel, "CathodeBracket");
-    //G4double cathBracket_z = 8.005*mm - meshBracket_thickn_/2;
-
     new G4PVPlacement(0, G4ThreeVector(0., 0., cathBracket_z - drift_z), logic_cathBracket, "CathodeBracket", logic_gas_drift, false, 0, true);
 
-
-    //// Cathode
+    // Cathode (in "GasDrift" volume)
     G4Tubs          *solid_cathode = new G4Tubs("Cathode", 0., mesh_rad_, (mesh_thickn_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_cathode = new G4LogicalVolume(solid_cathode, mesh_mat, "Cathode");
-    //G4double cathode_z = 4.505*mm + mesh_thickn_/2;  //cathode center from vessel center
     new G4PVPlacement(0, G4ThreeVector(0., 0., cathode_z - drift_z), logic_cathode, "Cathode", logic_gas_drift, false, 0, true);
 
-    //G4double drift_z = cathode_z - mesh_thickn_/2 - drift_length_/2;
+    // Source Box (in "GasDrift" volume)
+    G4Tubs          *solid_sourceBox = new G4Tubs("SourceBox", source_box_rad_/2 - 0.5 * mm, source_box_rad_/2, (source_box_thick_)/2, 0., 360.*deg);
+    G4LogicalVolume *logic_sourceBox = new G4LogicalVolume(solid_sourceBox, plexiglass_mat_, "SourceBox");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., source_box_z_ - drift_z), logic_sourceBox, "SourceBox", logic_gas_drift, false, 0, true);
+
+    // Aluminium foil on the top of the source box (in "GasDrift" volume)
+    G4Tubs          *solid_aluFoil = new G4Tubs("AluFoil", 0, alu_foil_rad_/2, (alu_foil_thick_)/2, 0., 360.*deg);
+    G4LogicalVolume *logic_aluFoil = new G4LogicalVolume(solid_aluFoil, aluminium_mat_, "AluFoil");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., alu_foil_z_ - drift_z), logic_aluFoil, "AluFoil", logic_gas_drift, false, 0, true);
+
+    // Light Tube (in GasDrift volume)
+    G4Tubs          *solid_light_tube = new G4Tubs("light_tube_ext", lightTube_rad_ , lightTube_rad_ + lightTube_thickn_/2 , lightTube_length_/2, 0, 360*deg);
+    G4LogicalVolume *logic_light_tube = new G4LogicalVolume(solid_light_tube, teflon_mat_, "light_tube");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., lightTube_z - drift_z), logic_light_tube, "light_tube", logic_gas_drift, false, 0, true);
+
+    // TPB coating inner part of the light tube (in vessel volume)
+    G4Tubs          *solid_tpb_light_tube = new G4Tubs("tpb_light_tube", tpb_lightTube_rad_int_, tpb_lightTube_rad_ext_, tpb_lightTube_length_/2, 0, 360*deg);
+    G4LogicalVolume *logic_tpb_light_tube = new G4LogicalVolume(solid_tpb_light_tube,tpb, "tpb_light_tube");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., tpb_lightTube_z - drift_z), logic_tpb_light_tube, "tpb_light_tube", logic_gas_drift, false, 0, true);
+
+    G4OpticalSurface* tpb_lightTube_coating_surf =
+      new G4OpticalSurface("TPB_COATING_OPSURF", glisur, ground,
+                           dielectric_dielectric, .01);
+    new G4LogicalSkinSurface("TPB_COATING_OPSURF", logic_tpb_light_tube, tpb_lightTube_coating_surf);
+
+    // Plate cathode (in GasDrift volume)
+    G4Tubs          *solid_cath_plate = new G4Tubs("CathPlate", cath_plate_rad_int_/2 , cath_plate_rad_ext_, cath_plate_length_/2, 0, 360*deg);
+    G4LogicalVolume *logic_cath_plate = new G4LogicalVolume(solid_cath_plate, teflon_mat_, "CathPlate");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., cath_plate_z - drift_z), logic_cath_plate, "CathPlate", logic_gas_drift, false, 0, true);
+
+    // Source plate (in GasDrift volume)
+
+    G4Tubs          *solid_source_plate = new G4Tubs("sourcePlate", 0, source_plate_rad_/2, source_plate_length_/2, 0, 360*deg);
+    G4LogicalVolume *logic_source_plate = new G4LogicalVolume(solid_source_plate, teflon_mat_, "sourcePlate");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., source_plate_z - drift_z), logic_source_plate, "sourcePlate", logic_gas_drift, false, 0, true);
+
+    //Loop to generate the rings (Gas Drift volume)
+    G4ThreeVector pos_rings = G4ThreeVector(0, 0, 0);
+
+    G4Tubs          *solid_rings = new G4Tubs("rings", rings_rad_int_/2, rings_rad_ext_/2, rings_length_/2, 0, 360*deg);
+    G4LogicalVolume *logic_rings = new G4LogicalVolume(solid_rings, aluminium_mat_, "rings");
+    
+    for (G4int i = 1; i < 7; i++) {
+      rings_z = cathode_z - drift_z - cath_gate * i/6 + rings_length_/2 ;
+      pos_rings = G4ThreeVector(0, 0, rings_z);
+
+      new G4PVPlacement(0, pos_rings, logic_rings, "rings", logic_gas_drift, false, i, true);
+    }
    
-    G4VPhysicalVolume* drift_phys_ = new G4PVPlacement(0, G4ThreeVector(0., 0., drift_z), logic_gas_drift, "GasDrift", logic_vessel, false, 0, true);
-    drift_gen_  = new CylinderPointSampler2020(drift_phys_);
-    //drift_gen_  = new CylinderPointSampler(drift_phys_);
+    // Definition of Drift properties
+
+    drift_gen_  = new CylinderPointSampler2020(drift_phys_); //Generator of random vertex in the Drift Volume (only if activated)
 
     // Define the drift field
     UniformElectricDriftField* drift_field = new UniformElectricDriftField();
+
     drift_field->SetCathodePosition(drift_z + drift_length_/2);
     drift_field->SetAnodePosition  (drift_z - drift_length_/2);
     drift_field->SetDriftVelocity(drift_vel_);
     drift_field->SetTransverseDiffusion(drift_transv_diff_);
     drift_field->SetLongitudinalDiffusion(drift_long_diff_);
+
+    // Apply drift field properties to the drift region defined as the Drift Volume previously
     G4Region* drift_region = new G4Region("DRIFT");
     drift_region->SetUserInformation(drift_field);
     drift_region->AddRootLogicalVolume(logic_gas_drift);
    
-
+    // Size of the steps in this volume
     logic_gas_drift->SetUserLimits(new G4UserLimits(1.*mm));
 
-    // Set the DRIFT volume as an ionization sensitive detector
+    // Set the DRIFT volume as an ionization sensitive detector to save what happens in this volume
     IonizationSD* active_sd = new IonizationSD("/GaP/DRIFT");
     logic_gas_drift->SetSensitiveDetector(active_sd);
     G4SDManager::GetSDMpointer()->AddNewDetector(active_sd);
 
-    //// EL gap
+
+
+    //// EL gap volume (in vessel volume)
     G4Tubs          *solid_gas_el = new G4Tubs("GasEL", 0., meshBracket_rad_, (el_length_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_gas_el = new G4LogicalVolume(solid_gas_el, gas, "GasEL");
-
-    //G4double el_z = drift_z - drift_length_/2 - el_length_/2;
-    //G4double el_z = -28.42 * mm;
-    G4cout << "el_length is 1234 : " << el_length_ - 2 * mesh_thickn_ << G4endl;
-
     G4VPhysicalVolume* el_phys_ = new G4PVPlacement(0, G4ThreeVector(0., 0., el_z), logic_gas_el, "GasEL", logic_vessel, false, 0, true);
+    
     el_gen_  = new CylinderPointSampler2020(el_phys_);
-    //el_gen_  = new CylinderPointSampler(el_phys_);
-    G4cout << "el_z needed for optical : " << el_z << G4endl;
+    
     //// Gate
     G4Tubs          *solid_gate = new G4Tubs("Gate", 0., mesh_rad_, (mesh_thickn_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_gate = new G4LogicalVolume(solid_gate, mesh_mat, "Gate");
-
-    //G4double gate_z = el_length_/2 - mesh_thickn_/2;
-    //G4double gate_z = anode_z + 10.2 * mm  + mesh_thickn_; // Distance between the boarders of the gate and the anode of 10.2mm
     new G4PVPlacement(0, G4ThreeVector(0., 0., gate_z - el_z), logic_gate, "Gate", logic_gas_el, false, 0, true);
 
     // Gate Bracket
     G4Tubs          *solid_gateBracket = new G4Tubs("GateBracket", mesh_rad_, meshBracket_rad_, (meshBracket_thickn_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_gateBracket = new G4LogicalVolume(solid_gateBracket, steel, "GateBracket");
-
-    //G4double gateBracket_z = 20.32 * mm;
-    //G4double gateBracket_z = gate_z + el_z; //Position to have the gate position at the gateBracket center
     new G4PVPlacement(0, G4ThreeVector(0., 0., gateBracket_z - el_z), logic_gateBracket, "GateBracket", logic_gas_el, false, 0, true);
 
-    
+    //// Anode
+    G4Tubs          *solid_anode = new G4Tubs("Anode", 0., mesh_rad_, (mesh_thickn_)/2, 0., 360.*deg);
+    G4LogicalVolume *logic_anode = new G4LogicalVolume(solid_anode, mesh_mat, "Anode");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., anode_z - el_z), logic_anode, "Anode", logic_gas_el, false, 0, true);
 
-    /// Peek Mesh Holder (holds cathode and gate)
-    G4double meshHolder_length_    = 36.75     *mm;
-    G4double meshHolder_width_     = 21.035    *mm;
-    G4double meshHolder_thickn_    = 24        *mm;
-
-    G4double meshHolder_hole_length_   = 15.75  *mm;
-    G4double meshHolder_holeUp_length_ = 6      *mm;
-    G4double meshHolder_hole_thickn_   = 11.667 *mm;
-
-    G4Box *solid_meshHolder_block = new G4Box("MeshHolder", meshHolder_width_/2, meshHolder_thickn_/2 , meshHolder_length_/2);
-    G4Box *solid_meshHolder_hole = new G4Box("MeshHolderHoleDown", meshHolder_width_, meshHolder_hole_thickn_ , meshHolder_hole_length_/2);
-    G4Box *solid_meshHolder_holeUp = new G4Box("MeshHolderHoleUp", meshHolder_width_, meshHolder_hole_thickn_ , meshHolder_holeUp_length_/2);
-    G4VSolid        *solidSub_meshHolder0 = new G4SubtractionSolid("MeshHolderHole_SubDown", solid_meshHolder_block, solid_meshHolder_hole, 0, G4ThreeVector(0., meshHolder_thickn_/2, meshHolder_length_/2-meshHolder_hole_length_/2-5*mm) );
-    G4VSolid        *solidSub_meshHolder = new G4SubtractionSolid("MeshHolderHole_SubUp", solidSub_meshHolder0, solid_meshHolder_holeUp, 0, G4ThreeVector(0., meshHolder_thickn_/2, -(meshHolder_length_/2-meshHolder_holeUp_length_/2-5*mm)) );
-    G4LogicalVolume *logic_meshHolder = new G4LogicalVolume(solidSub_meshHolder, peek, "MeshHolder");
-
-    G4double meshHolder_x = 5*mm + meshBracket_rad_ * cos(45*deg);
-    G4double meshHolder_y = 5*mm + meshBracket_rad_ * sin(45*deg);
-    G4double meshHolder_z = -13.005*mm + meshHolder_length_/2 ;
-
-    G4RotationMatrix* Rot45 = new G4RotationMatrix();
-    Rot45->rotateZ(45*deg);
-    G4RotationMatrix* Rot_45 = new G4RotationMatrix();
-    Rot_45->rotateZ(-45*deg);
-    G4RotationMatrix* Rot135 = new G4RotationMatrix();
-    Rot135->rotateZ(135*deg);
-    G4RotationMatrix* Rot_135 = new G4RotationMatrix();
-    Rot_135->rotateZ(-135*deg);
-
-    /*new G4PVPlacement(Rot45,   G4ThreeVector(-meshHolder_x, -meshHolder_y, -meshHolder_z), logic_meshHolder, "MeshHolderA", logic_vessel, false, 0, true);
-    new G4PVPlacement(Rot135,  G4ThreeVector(-meshHolder_x, meshHolder_y, -meshHolder_z), logic_meshHolder, "MeshHolderB", logic_vessel, false, 1, true);
-    new G4PVPlacement(Rot_45,  G4ThreeVector(meshHolder_x, -meshHolder_y, -meshHolder_z), logic_meshHolder, "MeshHolderC", logic_vessel, false, 2, true);
-    new G4PVPlacement(Rot_135, G4ThreeVector(meshHolder_x, meshHolder_y, -meshHolder_z), logic_meshHolder, "MeshHolderD", logic_vessel, false, 3, true);*/
-
-    //Steel Bar joining Mesh holder and PMT clad
-    G4double meshHolderBar_rad_     = 9./2   *mm;
-    G4double meshHolderBar_length_  = 35.75  *mm;
-
-    G4Tubs          *solid_meshHolderBar = new G4Tubs("MeshHolderBar", 0., meshHolderBar_rad_, (meshHolderBar_length_)/2, 0., 360.*deg);
-    G4LogicalVolume *logic_meshHolderBar = new G4LogicalVolume(solid_meshHolderBar, steel, "MeshHolderBar");
-
-    G4double meshHolderBar_xy = 73.769*mm;
-    G4double meshHolderBar_z  = meshHolder_z + meshHolder_length_/2 + meshHolderBar_length_/2 ;
-    new G4PVPlacement(0, G4ThreeVector(meshHolderBar_xy, meshHolderBar_xy, -meshHolderBar_z), logic_meshHolderBar, "MeshHolderBarA", logic_vessel, false, 0, true);
-    new G4PVPlacement(0, G4ThreeVector(-meshHolderBar_xy, meshHolderBar_xy, -meshHolderBar_z), logic_meshHolderBar, "MeshHolderBarB", logic_vessel, false, 1, true);
-    new G4PVPlacement(0, G4ThreeVector(meshHolderBar_xy, -meshHolderBar_xy, -meshHolderBar_z), logic_meshHolderBar, "MeshHolderBarC", logic_vessel, false, 2, true);
-    new G4PVPlacement(0, G4ThreeVector(-meshHolderBar_xy, -meshHolderBar_xy, -meshHolderBar_z), logic_meshHolderBar, "MeshHolderBarD", logic_vessel, false, 3, true);
+    // Anode Bracket
+    G4Tubs          *solid_anodeBracket = new G4Tubs("AnodeBracket", mesh_rad_, anodeBracket_rad_, (anodeBracket_thickn_)/2, 0., 360.*deg);
+    G4LogicalVolume *logic_anodeBracket = new G4LogicalVolume(solid_anodeBracket, steel, "AnodeBracket");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., anodeBracket_z - el_z), logic_anodeBracket, "AnodeBracket", logic_gas_el, false, 0, true);
 
     /// Define EL electric field    
     UniformElectricDriftField* el_field = new UniformElectricDriftField();
@@ -504,104 +547,6 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     el_region->SetUserInformation(el_field);
     el_region->AddRootLogicalVolume(logic_gas_el);
 
-    //// Anode
-    G4Tubs          *solid_anode = new G4Tubs("Anode", 0., mesh_rad_, (mesh_thickn_)/2, 0., 360.*deg);
-    G4LogicalVolume *logic_anode = new G4LogicalVolume(solid_anode, mesh_mat, "Anode");
-
-    //G4double anode_z = - el_length_/2 + mesh_thickn_/2;
-    //G4double anode_z = -40.495 * mm - el_z + (mesh_thickn_)/2; // 2mm between the mesh and the bottom plate of the PMTs
-   
-    //G4double anode_z = -anodeBracket_z - el_z; //anode always placed at the center of anodeBracket
-    new G4PVPlacement(0, G4ThreeVector(0., 0., anode_z - el_z), logic_anode, "Anode", logic_gas_el, false, 0, true);
-
-    // Anode Bracket
-    G4Tubs          *solid_anodeBracket = new G4Tubs("AnodeBracket", mesh_rad_, anodeBracket_rad_, (anodeBracket_thickn_)/2, 0., 360.*deg);
-    G4LogicalVolume *logic_anodeBracket = new G4LogicalVolume(solid_anodeBracket, steel, "AnodeBracket");
-
-    //G4double anodeBracket_z = gateBracket_z + meshBracket_thickn_/2 + 3.775*mm + anodeBracket_thickn_/2;
-    //G4double anodeBracket_z = -40.495 * mm; // in order to have 2mm between the center of anodeBracket and the 
-    //G4double anodeBracket_z = anode_z + el_z;
-    
-    new G4PVPlacement(0, G4ThreeVector(0., 0., anodeBracket_z - el_z), logic_anodeBracket, "AnodeBracket", logic_gas_el, false, 0, true);
-
-
-    G4Tubs          *test1 = new G4Tubs("test1", 0, 100 * mm, tpb_coating_thickn_/2, 0, 360*deg);
-    G4LogicalVolume *logic_test1 = new G4LogicalVolume(test1, tpb, "test1");
-    //new G4PVPlacement(0, G4ThreeVector(0., 0., cathode_z - (cathode_z - gateBracket_z)/2 ), logic_test1, "test1", logic_vessel, false, 0, true);
-    G4cout << "anode z is : " << anode_z << G4endl;
-
-    G4cout << "el gas z is : " << cathode_z - (cathode_z - gateBracket_z)/2<< G4endl;
-    G4double dist1 = anode_z;
-    G4double dist2 = gate_z;
-    G4cout << "dist 1 is :" << dist1 << G4endl;
-    G4cout << "dist 2 is :" << dist2 << G4endl;
-
-    G4cout << "Dist between anode and PMTs : " << dist2 - dist1 << G4endl;
-
-    // Light Tube
-    G4Tubs          *solid_light_tube_ext = new G4Tubs("light_tube_ext", lightTube_rad_, lightTube_rad_ + lightTube_thickn_ , lightTube_length_/2, 0, 360*deg);
-    G4Tubs          *solid_light_tube_hole = new G4Tubs("light_tube_hole", 0, lightTube_rad_, lightTube_length_/2, 0, 360*deg);
-    G4VSolid        *solid_light_tube = new G4SubtractionSolid("solid_light_tube", solid_light_tube_ext, solid_light_tube_hole, 0, G4ThreeVector(0., 0., lightTube_z));
-    G4LogicalVolume *logic_light_tube = new G4LogicalVolume(solid_light_tube, teflon_mat_, "light_tube");
-
-    //
-    //new G4PVPlacement(0, G4ThreeVector(0., 0., lightTube_z), logic_light_tube, "light_tube", logic_vessel, false, 0, true);
-
-    // TPB coating inner part of the light tube
-   
-    G4double tpb_lightTube_thickn_ = 0.003     *mm;
-    G4double tpb_lightTube_rad_    = lightTube_rad_ - tpb_lightTube_thickn_;
-    
-    G4Tubs          *solid_tpb_light_tube_ext = new G4Tubs("tpb_light_tube_ext", 0., tpb_lightTube_rad_+ tpb_lightTube_thickn_, lightTube_length_/2, 0, 360*deg);
-    G4Tubs          *solid_tpb_light_tube_hole = new G4Tubs("tpb_light_tube_hole", 0, tpb_lightTube_rad_, lightTube_length_/2, 0, 360*deg);
-    G4VSolid        *solid_tpb_light_tube = new G4SubtractionSolid("solid_tpb_light_tube", solid_tpb_light_tube_ext, solid_tpb_light_tube_hole, 0, G4ThreeVector(0., 0., lightTube_z));
-    G4LogicalVolume *logic_tpb_light_tube = new G4LogicalVolume(solid_tpb_light_tube,tpb, "tpb_light_tube");
-
-    //new G4PVPlacement(0, G4ThreeVector(0., 0., lightTube_z), logic_tpb_light_tube, "tpb_light_tube", logic_vessel, false, 0, true);
-
-    G4OpticalSurface* tpb_lightTube_coating_surf =
-      new G4OpticalSurface("TPB_COATING_OPSURF", glisur, ground,
-                           dielectric_dielectric, .01);
-    new G4LogicalSkinSurface("TPB_COATING_OPSURF", logic_tpb_light_tube, tpb_lightTube_coating_surf);
-
-    // Source Box
-    G4Tubs          *solid_sourceBox = new G4Tubs("SourceBox", source_box_rad_/2 - 0.5 * mm, source_box_rad_/2, (source_box_thick_)/2, 0., 360.*deg);
-    G4LogicalVolume *logic_sourceBox = new G4LogicalVolume(solid_sourceBox, plexiglass_mat_, "SourceBox");
-    //G4double cathBracket_z = 8.005*mm - meshBracket_thickn_/2;
-
-    new G4PVPlacement(0, G4ThreeVector(0., 0., source_box_z_ - drift_z), logic_sourceBox, "SourceBox", logic_gas_drift, false, 0, true);
-
-    // Aluminium foil on the top of the source box
-    G4Tubs          *solid_aluFoil = new G4Tubs("AluFoil", 0, alu_foil_rad_/2, (alu_foil_thick_)/2, 0., 360.*deg);
-    G4LogicalVolume *logic_aluFoil = new G4LogicalVolume(solid_aluFoil, aluminium_mat_, "AluFoil");
-    
-
-    new G4PVPlacement(0, G4ThreeVector(0., 0., alu_foil_z_ - drift_z), logic_aluFoil, "AluFoil", logic_gas_drift, false, 0, true);
-    
-    // Peek Anode Holder
-    G4double anodeHolder_length_  = 19.        *mm;
-    G4double anodeHolder_rad_     = 145.001/2 *mm;
-    G4double anodeHolder_thickn_  = 17.       *mm;
-    G4double anodeHolder_angle_   = 7.964     *deg;
-
-    G4double anodeHolder_hole_length_ = 20    *mm;
-    G4double anodeHolder_hole_rad_    = anodeHolder_rad_ + 8*mm;
-    G4double anodeHolder_hole_thickn_ = 10    *mm;
-    G4double anodeHolder_hole_angle_  = 7.965 *deg;
-
-    G4Tubs *solid_anodeHolder_block = new G4Tubs("AnodeHolder", anodeHolder_rad_, anodeHolder_rad_+anodeHolder_thickn_, anodeHolder_length_/2, -anodeHolder_angle_/2, anodeHolder_angle_);
-    G4Tubs *solid_anodeHolder_hole = new G4Tubs("AnodeHolderHole", anodeHolder_hole_rad_, anodeHolder_hole_rad_+anodeHolder_hole_thickn_, anodeHolder_hole_length_/2, -anodeHolder_hole_angle_/2, anodeHolder_hole_angle_);
-    G4VSolid        *solidSub_anodeHolder = new G4SubtractionSolid("AnodeHolderHole_Sub", solid_anodeHolder_block, solid_anodeHolder_hole, 0, G4ThreeVector(0,0,anodeHolder_length_/2-anodeHolder_hole_length_/2) );
-    G4LogicalVolume *logic_anodeHolder = new G4LogicalVolume(solidSub_anodeHolder, peek, "AnodeHolder");
-
-    //G4double anodeHolder_z = 29.495*mm + anodeHolder_length_/2;
-    G4double anodeHolder_z = 49.995 * mm;
-
-    /*new G4PVPlacement(Rot45,   G4ThreeVector(0., 0., -anodeHolder_z), logic_anodeHolder, "AnodeHolderA", logic_vessel, false, 0, true);
-    new G4PVPlacement(Rot135,  G4ThreeVector(0., .0, -anodeHolder_z), logic_anodeHolder, "AnodeHolderB", logic_vessel, false, 1, true);
-    new G4PVPlacement(Rot_45,  G4ThreeVector(0., 0., -anodeHolder_z), logic_anodeHolder, "AnodeHolderC", logic_vessel, false, 2, true);
-    new G4PVPlacement(Rot_135, G4ThreeVector(0., 0., -anodeHolder_z), logic_anodeHolder, "AnodeHolderD", logic_vessel, false, 3, true);
-*/
     G4cout << "* GATE Z position: " << el_z + gate_z << G4endl; 
     G4cout << "* GATE Volt position: " << el_z + el_length_/2. << G4endl;
     G4cout << "* ANODE Z position: " << el_z + anode_z << G4endl;
@@ -612,69 +557,8 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4cout << "* EL field intensity (kV/cm): " << el_field_ / (kilovolt/cm)
             << "  ->  EL Light yield (photons/ie-/cm): " << yield_ / (1/cm) << G4endl;
     G4cout << "* EL Light yield (photons/ie-): " << yield_ * el_length_ << G4endl;
-
-    //// Quartz Window
-    /*G4Tubs          *solid_quartz_window = new G4Tubs("QuartzWindow", 0, quartz_window_rad_, quartz_window_thickn_/2, 0, 360*deg);
-    G4LogicalVolume *logic_quartz_window = new G4LogicalVolume(solid_quartz_window, quartz, "QuartzWindow");*/
-
-    G4double quartz_window_z = 35.495*mm + quartz_window_thickn_/2 ;
-    //new G4PVPlacement(0, G4ThreeVector(0., 0., -quartz_window_z ), logic_quartz_window, "QuartzWindow", logic_vessel, false, 0, true);
-
-    // Peek Quartz Window Holder
-    G4double windowHolder_angle_   = 10      *deg;
-    G4double windowHolder_length1_ = 4.       *mm;
-    G4double windowHolder_length2_ = 19.      *mm;
-    G4double windowHolder_length3_ = 5.       *mm;
-    G4double windowHolder_rad0_    = 100.4/2  *mm;
-    G4double windowHolder_rad1_    = 118.4/2  *mm;
-    G4double windowHolder_rad2_    = 122.4/2  *mm;
-    G4double windowHolder_rad3_    = 140.4/2  *mm;
-
-    G4double windowHolder_block2_z = windowHolder_length1_/2 + windowHolder_length2_/2 ;
-    G4double windowHolder_block3_z = windowHolder_length3_/2 + windowHolder_length2_/2 + windowHolder_block2_z ;
-
-    G4Tubs *solid_windowHolder_block1 = new G4Tubs("QuartzWindowHolder1", windowHolder_rad0_, windowHolder_rad2_, windowHolder_length1_/2, -windowHolder_angle_/2, windowHolder_angle_);
-    G4Tubs *solid_windowHolder_block2 = new G4Tubs("QuartzWindowHolder2", windowHolder_rad1_, windowHolder_rad2_, windowHolder_length2_/2, -windowHolder_angle_/2, windowHolder_angle_);
-    G4Tubs *solid_windowHolder_block3 = new G4Tubs("QuartzWindowHolder3", windowHolder_rad1_, windowHolder_rad3_, windowHolder_length3_/2, -windowHolder_angle_/2, windowHolder_angle_);
-    G4VSolid        *solidUni_windowHolder0 = new G4UnionSolid("WindowHolder_Union1", solid_windowHolder_block1, solid_windowHolder_block2, 0, G4ThreeVector(0,0,-windowHolder_block2_z) );
-    G4VSolid        *solidUni_windowHolder = new G4UnionSolid("WindowHolder_Union2", solidUni_windowHolder0, solid_windowHolder_block3, 0, G4ThreeVector(0,0,-windowHolder_block3_z) );
-    G4LogicalVolume *logic_windowHolder = new G4LogicalVolume(solidUni_windowHolder, peek, "QuartzWindowHolder");
-
-    G4double quartz_windowHolder_z = quartz_window_z - quartz_window_thickn_/2 -  windowHolder_length1_/2;
-    /*new G4PVPlacement(Rot45,   G4ThreeVector(0., 0., -quartz_windowHolder_z), logic_windowHolder, "QuartzWindowHolderA", logic_vessel, false, 0, true);
-    new G4PVPlacement(Rot135,  G4ThreeVector(0., 0., -quartz_windowHolder_z), logic_windowHolder, "QuartzWindowHolderB", logic_vessel, false, 1, true);
-    new G4PVPlacement(Rot_45,  G4ThreeVector(0., 0., -quartz_windowHolder_z), logic_windowHolder, "QuartzWindowHolderC", logic_vessel, false, 2, true);
-    new G4PVPlacement(Rot_135, G4ThreeVector(0., 0., -quartz_windowHolder_z), logic_windowHolder, "QuartzWindowHolderD", logic_vessel, false, 3, true);
-    */
-    G4double windowHolderTop_length1_ = 3.  *mm;
-    G4double windowHolderTop_length2_ = 4.  *mm;
-    G4double windowHolderTop_rad0_    = windowHolder_rad0_ ;
-    G4double windowHolderTop_rad1_    = windowHolderTop_rad0_ + 4.*mm ;
-    G4double windowHolderTop_rad2_    = windowHolder_rad1_ ;
-
-    G4double windowHolderTop_block2_z = windowHolderTop_length1_/2 + windowHolderTop_length2_/2 ;
-
-    G4Tubs *solid_windowHolderTop_block1 = new G4Tubs("QuartzWindowHolderTop1", windowHolderTop_rad1_, windowHolderTop_rad2_, windowHolderTop_length1_/2, -windowHolder_angle_/2, windowHolder_angle_);
-    G4Tubs *solid_windowHolderTop_block2 = new G4Tubs("QuartzWindowHolderTop2", windowHolderTop_rad0_, windowHolderTop_rad2_, windowHolderTop_length2_/2, -windowHolder_angle_/2, windowHolder_angle_);
-    G4VSolid        *solidUni_windowHolderTop = new G4UnionSolid("WindowHolderTop_Union", solid_windowHolderTop_block1, solid_windowHolderTop_block2, 0, G4ThreeVector(0,0,-windowHolderTop_block2_z) );
-    G4LogicalVolume *logic_windowHolderTop = new G4LogicalVolume(solidUni_windowHolderTop, peek, "QuartzWindowHolderTop");
-
-    G4double quartz_windowHolderTop_z = quartz_window_z - quartz_window_thickn_/2 +  windowHolderTop_length1_/2;
-    /*new G4PVPlacement(Rot45,   G4ThreeVector(0., 0., -quartz_windowHolderTop_z), logic_windowHolderTop, "QuartzWindowHolderTopA", logic_vessel, false, 0, true);
-    new G4PVPlacement(Rot135,  G4ThreeVector(0., 0., -quartz_windowHolderTop_z), logic_windowHolderTop, "QuartzWindowHolderTopB", logic_vessel, false, 1, true);
-    new G4PVPlacement(Rot_45,  G4ThreeVector(0., 0., -quartz_windowHolderTop_z), logic_windowHolderTop, "QuartzWindowHolderTopC", logic_vessel, false, 2, true);
-    new G4PVPlacement(Rot_135, G4ThreeVector(0., 0., -quartz_windowHolderTop_z), logic_windowHolderTop, "QuartzWindowHolderTopD", logic_vessel, false, 3, true);
-    */
-    /// Build PMT
-    //pmt_.Construct();
-    //G4LogicalVolume* logic_pmt = pmt_.GetLogicalVolume();
-    //G4double pmt_length_ = pmt_.Length();
-    //G4double pmt_z  = 42.495*mm + pmt_length_/2;
-
-    //G4Tubs          *test1 = new G4Tubs("test1", 0, 100 * mm, tpb_coating_thickn_/2, 0, 360*deg);
-    //G4LogicalVolume *logic_test1 = new G4LogicalVolume(test1, tpb, "test1");
-    //new G4PVPlacement(0, G4ThreeVector(0., 0., -pmt_z+ pmt_length_/2 ), logic_test1, "test1", logic_vessel, false, 0, true);
-
+    
+    /// Build PMT (in vessel volume)
     G4Tubs *solid_pmt = new G4Tubs("SolidPMT", 0., pmt_rad_, pmt_length_/2, 0., 360.*deg); // Hamamatsu pmt length: 43*mm | STEP pmt gap length: 57.5*mm
 
     // Position pairs (x,Y) for PMTs
@@ -683,24 +567,14 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
 
 
     /// Evaporated TPB
-    //G4Tubs          *solid_tpb_coating = new G4Tubs("CoatingTPB", 0, quartz_window_rad_, tpb_coating_thickn_/2, 0, 360*deg);
-    //G4LogicalVolume *logic_tpb_coating = new G4LogicalVolume(solid_tpb_coating, tpb, "CoatingTPB");
-    //G4double quartz_window_z = 35.495*mm + quartz_window_thickn_/2 ;
-
     G4Tubs          *solid_tpb_coating = new G4Tubs("CoatingTPB", 0, pmt_rad_ , tpb_coating_thickn_/2, 0, 360*deg);
     G4LogicalVolume *logic_tpb_coating = new G4LogicalVolume(solid_tpb_coating, tpb, "CoatingTPB");
     G4ThreeVector pos_pmt = G4ThreeVector(0, 0, 0);
-    //G4double tpb_coating_z = quartz_window_z - quartz_window_thickn_/2 - tpb_coating_thickn_/2 ;
-
-    //G4double tpb_coating_z = pmt_z + pmt_length_/2 + 0.00000001 * mm;
-    //new G4PVPlacement(0, G4ThreeVector(0., 0., tpb_coating_z ), logic_tpb_coating, "CoatingTPB", logic_vessel, false, 0, true);
     G4ThreeVector pos_tpb_coating = G4ThreeVector(0., 0., 0.);
 
     //loop to coat TPB on the surface of each PMTs
-
     for (G4int i = 0; i < G4int(pmt_PsX.size()); i++) {
-      //pos_pmt = G4ThreeVector(pmt_PsX[i]*mm, pmt_PsY[i]*mm, -pmt_z + pmt_length_/2 + 0.1 * mm);
-      pos_tpb_coating = G4ThreeVector(pmt_PsX[i]*mm, pmt_PsY[i]*mm, -pmt_z + pmt_length_/2 + tpb_coating_thickn_/2);
+      pos_tpb_coating = G4ThreeVector(pmt_PsX[i]*mm, pmt_PsY[i]*mm, tpb_coating_z);
 
       new G4PVPlacement(0, pos_tpb_coating, logic_tpb_coating, "CoatingTPB", logic_vessel, false, 0, true);
       G4cout << "pos_pmt is : " << pos_pmt << G4endl;
@@ -714,24 +588,22 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
 
     // PMT clad
     G4VSolid *solid_enclosure_pmt = new G4Tubs("EnclosurePMT", 0, enclosure_pmt_rad_+ enclosure_pmt_thickn_ , (enclosure_pmt_length_)/2, 0., 360.*deg);
-    G4double enclosure_pmt_z = vessel_length_/2 - enclosure_pmt_length_/2;
-    G4double relative_pmt_z  = enclosure_pmt_z - pmt_z;
+    
     // Vacuum inside the pmt enclosure
-    G4double enclosurevac_pmt_z = vessel_length_/2 - enclosurevac_pmt_length_/2;
-    G4double relativevac_pmt_z  = enclosurevac_pmt_z - pmt_z;
+    
     G4VSolid *solid_enclosurevac_pmt = new G4Tubs("EnclosureVacPMT", 0, enclosure_pmt_rad_, (enclosurevac_pmt_length_)/2, 0., 360.*deg);
     // PMT Holder
-    G4double pmtHolder_z = enclosurevac_pmt_length_/2 - pmtHolder_length_/2;
+    
     G4VSolid *solid_pmtHolder = new G4Tubs("PMTHolder", 0, pmtHolder_rad_, (pmtHolder_length_)/2, 0., 360.*deg);
     // Steel plate enclosing the pmt tube
-    G4double plate1_pmt_z = enclosure_pmt_z - enclosure_pmt_length_/2 - plate_pmt_length_/2;
+    
     G4VSolid *solid_plate1_pmt = new G4Tubs("PMTplateBottom1", 0, plate_pmt_rad_+plate_pmt_thickn_, plate_pmt_length_/2, 0, 360*deg);
 
-    //G4ThreeVector pos_pmt = G4ThreeVector(0, 0, 0);
     G4ThreeVector pos_enclosure_pmt = G4ThreeVector(0, 0, 0);
     G4ThreeVector pos_enclosurevac_pmt = G4ThreeVector(0, 0, 0);
     G4ThreeVector pos = G4ThreeVector(0, 0, 0);
 
+    // Loop to generate the PMTs
     for (G4int i = 0; i < G4int(pmt_PsX.size()); i++) {
       pos_pmt = G4ThreeVector(pmt_PsX[i]*mm, pmt_PsY[i]*mm, -pmt_z);
       pos_enclosure_pmt = G4ThreeVector(pmt_PsX[i]*mm, pmt_PsY[i]*mm, relative_pmt_z);
@@ -763,16 +635,14 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4LogicalVolume *logic_plate0_pmt = new G4LogicalVolume(solid_plate0_pmt, steel, "PMTplateBottom0");
 
     //G4double plate0_pmt_z = plate1_pmt_z - plate_pmt_length_;
-    G4double plate0_pmt_z = 64.495 *mm;
+    
     new G4PVPlacement(0, G4ThreeVector(0., 0., -plate0_pmt_z), logic_plate0_pmt, "PMTplateBottom0", logic_vessel, false, 0, true);
 
     // Upper steel plate at the pmt clad
-    G4double plateUp_pmt_rad_ = enclosure_pmt_rad_ + enclosure_pmt_thickn_;
-
     G4Tubs          *solid_plateUp_pmt = new G4Tubs("PMTplateUp", plateUp_pmt_rad_, plateUp_pmt_rad_+plateUp_pmt_thickn_, plateUp_pmt_length_/2, 0, 360*deg);
     G4LogicalVolume *logic_plateUp_pmt = new G4LogicalVolume(solid_plateUp_pmt, steel, "PMTplateUp");
 
-    G4double plateUp_pmt_z = vessel_length_/2 - plateUp_pmt_length_/2 ;
+    
     new G4PVPlacement(0, G4ThreeVector(0., 0., -plateUp_pmt_z), logic_plateUp_pmt, "PMTplateUp", logic_vessel, false, 0, true);
 
 }
