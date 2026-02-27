@@ -38,7 +38,7 @@ GaP::GaP():
     gas_ (nullptr),
     mesh_mat_ (nullptr),
 
-    gas_element_("Xe"),
+    gas_element_("Ar"),
 
     vessel_rad_        (276./2  *mm),
     vessel_length_     (38.599  *cm), // Adjusted length so that the gas volume is centered. Original length (38.639  *cm),
@@ -74,8 +74,8 @@ GaP::GaP():
 
     pressure_          (5 * bar),
     temperature_       (293.15 * kelvin),
-    sc_yield_          (2222 * 1/MeV), // Wsc = 45 eV, fr
-    //sc_yield_          (0 * 1/MeV), // Wsc = 45 eV, fr
+    //sc_yield_          (2222 * 1/MeV), // Wsc = 45 eV, fr 
+    sc_yield_          (0 * 1/MeV), // Wsc = 45 eV, fr
     elifetime_         (1e6* ms),
     //    elifetime_         (0* ms),
 
@@ -370,7 +370,8 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4double source_box_z_ = source_plate_z - source_plate_length_/2 - source_box_thick_/2; // Source box placed on the small hole of the light tube
 
     G4double alu_foil_rad_ = source_box_rad_;
-    G4double alu_foil_thick_ = 0.025 * mm;
+    G4double alu_foil_thick_ = 1. * mm; // Real thickness
+    //G4double alu_foil_thick_ = 1. * mm;
     G4double alu_foil_z_ = source_box_z_ - source_box_thick_/2 - alu_foil_thick_/2; // Z position of the surface of the source box
 
     G4double rings_rad_int_ = 156*mm;
