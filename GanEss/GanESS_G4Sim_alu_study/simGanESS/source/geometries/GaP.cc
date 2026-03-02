@@ -38,7 +38,7 @@ GaP::GaP():
     gas_ (nullptr),
     mesh_mat_ (nullptr),
 
-    gas_element_("Ar"),
+    gas_element_("Xe"),
 
     vessel_rad_        (276./2  *mm),
     vessel_length_     (38.599  *cm), // Adjusted length so that the gas volume is centered. Original length (38.639  *cm),
@@ -369,6 +369,8 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
 
     G4double source_box_z_ = source_plate_z - source_plate_length_/2 - source_box_thick_/2; // Source box placed on the small hole of the light tube
     
+    std::cout << "z pos vertex : " << source_box_z_ << std::endl;
+
     G4double vsource_box_rad_ = source_box_rad_ - 1. * mm;
     G4double vsource_box_thick_ = source_box_thick_;
     G4double vsource_box_z_ = source_box_z_;
@@ -377,6 +379,7 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4double alu_foil_thick_ = 1. * mm; // Real thickness
     //G4double alu_foil_thick_ = 1. * mm;
     G4double alu_foil_z_ = source_box_z_ - source_box_thick_/2 - alu_foil_thick_/2; // Z position of the surface of the source box
+    
     G4double rings_rad_int_ = 156*mm;
     G4double rings_rad_ext_ = 166*mm;
     G4double rings_length_ = 9*mm;
@@ -436,16 +439,14 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     new G4PVPlacement(0, G4ThreeVector(0., 0., cathode_z - drift_z), logic_cathode, "Cathode", logic_gas_drift, false, 0, true);
 
     // Source Box (in "GasDrift" volume)
-    G4Tubs          *solid_sourceBox = new G4Tubs("SourceBox", source_box_rad_/2 - 0.5 * mm, source_box_rad_/2, (source_box_thick_)/2, 0., 360.*deg);
+    G4Tubs          *solid_sourceBox = new G4Tubs("SourceBox", 0, source_box_rad_/2, (source_box_thick_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_sourceBox = new G4LogicalVolume(solid_sourceBox, plexiglass_mat_, "SourceBox");
     new G4PVPlacement(0, G4ThreeVector(0., 0., source_box_z_ - drift_z), logic_sourceBox, "SourceBox", logic_gas_drift, false, 0, true);
 
     // Vacuum inside Source Box (in "SourceBox" volume)
-    
-
-    G4Tubs          *solid_vSourceBox = new G4Tubs("VSourceBox", 0, vsource_box_rad_/2 - 0.5 * mm, (vsource_box_thick_)/2, 0., 360.*deg);
+    G4Tubs          *solid_vSourceBox = new G4Tubs("VSourceBox", 0, source_box_rad_/2 - 0.5 * mm, (vsource_box_thick_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_vSourceBox = new G4LogicalVolume(solid_vSourceBox, vacuum, "VSourceBox");
-    new G4PVPlacement(0, G4ThreeVector(0., 0., vsource_box_z_ - drift_z), logic_vSourceBox, "VSourceBox", logic_gas_drift, false, 0, true);
+    //new G4PVPlacement(0, G4ThreeVector(0., 0., 0), logic_vSourceBox, "VSourceBox", logic_sourceBox, false, 0, true);
 
     // Aluminium foil on the top of the source box (in "GasDrift" volume)
     G4Tubs          *solid_aluFoil = new G4Tubs("AluFoil", 0, alu_foil_rad_/2, (alu_foil_thick_)/2, 0., 360.*deg);
