@@ -1,3 +1,5 @@
+#### In this script we generate plots and save values usefull to make final plots with accumulated data
+
 print('We are in charge_study.py')
 import pandas as pd
 
@@ -18,9 +20,11 @@ import sys
 
 run_nb = [sys.argv[1]]
 event_min = int(sys.argv[2])
-event_max = event_min + 100
+
 wd_func = str(sys.argv[3])
 gas = str(sys.argv[4])
+nf = int(sys.argv[5])
+event_max = event_min + nf
 
 #loading of data
 charge = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
@@ -211,11 +215,17 @@ print('3 : ', len(charge[~m3])/chargetot)
 print('4 : ', len(charge[~m4])/chargetot)
 print('5 : ', len(charge[~m5])/chargetot)
 
+c2, b2, _ = plt.hist(fluct, bins=fluctbins)
+b2_centers = 0.5 * (b2[:-1] + b2[1:])
+histo2 = np.column_stack((c2, b2_centers))
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct1D_histo_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", histo2)
+
 plt.hist(charge[m1] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut1 ({len(charge[~m1])/chargetot:.3f}%)')
 plt.hist(charge[m2] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut2 ({len(charge[~m2])/chargetot:.3f}%)')
 plt.hist(charge[m3] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut3 ({len(charge[~m3])/chargetot:.3f}%)')
 plt.hist(charge[m4] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut4 ({len(charge[~m4])/chargetot:.3f}%)')
 plt.hist(charge[m5] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut5 ({len(charge[~m5])/chargetot:.3f}%)')
+
 plt.axvline(1.49, color='red', linestyle='--', label='1.49keV')
 plt.axvline(2.9, color='orange', linestyle='--', label='2.9keV')
 plt.axvline(5.9, color='green', linestyle='--', label='5.9keV')
@@ -229,15 +239,15 @@ plt.show()
 
 # Here the commented code is for plotting wf distrib with the cuts, we might want to just show this plot for a sample but it is heavy to produce each time
 
-#size_plot = 8
-#row = 2
-#col = 4
-#fig, axes = plt.subplots(row, col, figsize=(size_plot * col ,size_plot * row), constrained_layout=True)
-#axes = axes.flatten()
+size_plot = 8
+row = 2
+col = 4
+fig, axes = plt.subplots(row, col, figsize=(size_plot * col ,size_plot * row), constrained_layout=True)
+axes = axes.flatten()
 
-#mask_ene = (charge * 5.9/to_kev >= 1.3) & (charge * 5.9/to_kev <= 1.6)
+mask_ene = (charge * 5.9/to_kev >= 1.3) & (charge * 5.9/to_kev <= 1.6)
 
-#t = np.linspace(0, 40, 5000)
+t = np.linspace(0, 40, 5000)
 #wfplot0 = wf[mask_ene]
 #t_broadcast = np.broadcast_to(t[:, np.newaxis], wfplot0.T.shape)
 
@@ -263,12 +273,12 @@ plt.show()
 #axes[2].set_ylabel("Charge (pes)")
 
 
-#c3 = mask_ene + m3
-#wfplot3 = wf[c3]
-#t_broadcast = np.broadcast_to(t[:, np.newaxis], wfplot3.T.shape)
-#axes[3].hist2d(t_broadcast.flatten(), wfplot3.T.flatten(), bins=[200, 200], cmap='viridis', norm=LogNorm())
+c3 = mask_ene + m3
+wfplot3 = wf[c3]
+t_broadcast = np.broadcast_to(t[:, np.newaxis], wfplot3.T.shape)
+axes[3].hist2d(t_broadcast.flatten(), wfplot3.T.flatten(), bins=[200, 200], cmap='viridis', norm=LogNorm())
 
-#axes[3].set_xlabel("Time ($\mu$s)")
-#axes[3].set_ylabel("Charge (pes)")
+axes[3].set_xlabel("Time ($\mu$s)")
+axes[3].set_ylabel("Charge (pes)")
 
-#plt.show()
+plt.show()

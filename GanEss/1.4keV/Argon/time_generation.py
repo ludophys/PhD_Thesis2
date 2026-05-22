@@ -1,3 +1,5 @@
+# here we generate the variable diff that is t07-t03 in order to study the rising time of each saved wf
+
 print('We are in time_generation.py')
 import pandas as pd
 
@@ -19,9 +21,10 @@ import sys
 
 run_nb = [sys.argv[1]]
 event_min = int(sys.argv[2])
-event_max = event_min + 10
 wd_func = str(sys.argv[3])
 gas = str(sys.argv[4])
+nf = int(sys.argv[5])
+event_max = event_min + nf
 
 wf = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
 print('wf loaded')

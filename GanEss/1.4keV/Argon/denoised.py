@@ -1,3 +1,5 @@
+### In this script, we denoise wf and we store integral and signal
+
 print('We are in denoised.py')
 #1.4keV focus
 import pandas as pd
@@ -19,6 +21,14 @@ import matplotlib.colors as colors
 
 import sys
 
+
+run_nb = [sys.argv[1]]
+event_min = int(sys.argv[2])
+wd_func = str(sys.argv[3])
+gas = str(sys.argv[4])
+nf = int(sys.argv[5])
+
+
 import gres.database.load_db as db
 data_pmt = db.DataPMT('gap', 5000)
 print(data_pmt['adc_to_pes'])
@@ -28,13 +38,12 @@ calib = np.array(data_pmt['adc_to_pes'].to_list())
 nbr_evpr = 1000
 t = np.linspace(0, 5000, 5000) #5000 bins of 8ns = 40ms
 
-gas = str(sys.argv[4])
 # True for plotting few wfs
 plot = False
 
 #run_nb = [2661] #xenon
 print(sys.argv[0])
-run_nb = [sys.argv[1]] #argon
+ #argon
 
 #usefull to focus only on WF producing a specific energy region
 #ene_range_min = np.arange(0, 1400, 200)
@@ -58,10 +67,10 @@ WF_save = []
 amp_WF = []
 denoised_save = []
 wf_denoised_save = []
-
+crossings = []
 time_cumsum = []
+crossings = []
 
-wd_func = str(sys.argv[3])
 
 cpt_plot = 0
 for run in run_nb:
@@ -69,14 +78,14 @@ for run in run_nb:
     files = glob.glob(folder+"/*.h5")
     n_files = len(files)
 
-    event_min = int(sys.argv[2])
-    event_max = event_min + 100
-
+    event_max = event_min + nf
+    it_max = event_max
     if event_max > n_files:
-        event_max = n_files-1
+        it_max = n_files-1
+        print('event_max is :', it_max)
 
     #Loop over the nb of file we want to analyze
-    for i in range(event_min, event_max): 
+    for i in range(event_min, it_max): 
     #for i in range(0, 50):
 
         wf_file = str(files[i])
@@ -160,12 +169,17 @@ for run in run_nb:
 
                         denoised = pywt.waverec(coeffs_filtered, wd_func+'4')
 
-                        #we store the max value of the WF to see the distrib 
-                        amp_WF.append(np.max(pmt_rwf_bs))
-                        wf_denoised_save.append(denoised)
-                        denoised_save.append(np.sum(denoised))
-                        #Integral in an automatic window is saved
-                        charge.append(np.sum(pmt_rwf_bs[charge_int]))
+                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000):
+               
+                            #time_charge = (t>=np.argmax(denoised) - 350) & (t<=np.argmax(denoised) + 2125)
+                            time_charge = (t>=1000) & (t<=4000)
+
+                            amp_WF.append(np.max(pmt_rwf_bs))
+                            wf_denoised_save.append(denoised)
+                            denoised_save.append(np.sum(denoised))
+                            #Integral in an automatic window is saved
+                            charge.append(np.sum(denoised[time_charge]))
+                            #charge.append(np.sum(denoised))
                         cpt_plot += 1
                         if (plot == True) & (0<=cpt_plot<=3):
 
@@ -174,6 +188,7 @@ for run in run_nb:
                             plt.xlabel("Timebin (8ns)")
                             plt.ylabel("Charge (pes)")
                             plt.show()
+
 
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save)
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", wf_denoised_save)

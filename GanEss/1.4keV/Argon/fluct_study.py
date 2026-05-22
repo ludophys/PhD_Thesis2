@@ -1,3 +1,5 @@
+# here we calculate the variable fluct that calculate how smooth the ratio curve is
+
 print('We are in fluct_study.py')
 import pandas as pd
 
@@ -17,9 +19,11 @@ import sys
 
 run_nb = [sys.argv[1]]
 event_min = int(sys.argv[2])
-event_max = event_min + 100
+
 wd_func = str(sys.argv[3])
 gas = str(sys.argv[4])
+nf = int(sys.argv[5])
+event_max = event_min + nf
 
 wf = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
 print('wf loaded')
