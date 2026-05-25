@@ -184,7 +184,7 @@ for run in run_nb:
                         if (plot == True) & (0<=cpt_plot<=3):
 
                             plt.plot(t, pmt_rwf_bs)
-                            plt.axhline(np.mean(pmt_rwf_bs[baseline]) + 3 * np.std(pmt_rwf_bs[baseline]), color='red')
+                            #plt.axhline(np.mean(pmt_rwf_bs[baseline]) + 3 * np.std(pmt_rwf_bs[baseline]), color='red')
                             plt.xlabel("Timebin (8ns)")
                             plt.ylabel("Charge (pes)")
                             plt.show()
