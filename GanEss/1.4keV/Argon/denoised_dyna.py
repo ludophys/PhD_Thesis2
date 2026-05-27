@@ -21,6 +21,93 @@ import matplotlib.colors as colors
 
 import sys
 
+from scipy.signal import find_peaks
+
+# ==========================================
+# Parameters
+# ==========================================
+
+n_left = 8000 // 8
+integral_bin_right = 20000 // 8
+
+# ==========================================
+# Dynamic integration window
+# ==========================================
+
+def find_dynamic_window(wf):
+
+    roi = wf[n_left:integral_bin_right]
+
+    peaks, props = find_peaks(
+        roi,
+        height=1.2,
+        distance=30,
+        prominence=0.8
+    )
+
+    if len(peaks) == 0:
+        return n_left, integral_bin_right
+
+    peak = peaks[0]
+
+    # ======================
+    # START
+    # ======================
+
+    threshold = 0.2 * props['peak_heights'][0]
+
+    left = roi[max(0, peak-50):peak]
+
+    under = np.where(left < threshold)[0]
+
+    if len(under) > 0:
+
+        start = (
+            under[-1]
+            + max(0, peak-50)
+            + n_left
+        )
+
+    else:
+
+        start = n_left
+
+    # ======================
+    # END
+    # ======================
+
+    search_end = min(
+        integral_bin_right,
+        start + 1500
+    )
+
+    if peak + n_left >= search_end:
+        return start, search_end
+
+    tail = wf[peak+n_left : search_end]
+
+    if len(tail) < 20:
+        return start, search_end
+
+    for i in range(len(tail)-20):
+
+        # stop before second peak
+        if len(peaks) > 1:
+
+            if i + peak >= peaks[1]:
+                break
+
+        if np.mean(tail[i:i+20]) < 0.1:
+
+            end = peak + n_left + i
+
+            return start, end
+
+    # fallback
+    return start, search_end
+
+
+
 
 run_nb = [sys.argv[1]]
 event_min = int(sys.argv[2])
@@ -67,6 +154,7 @@ WF_save = []
 amp_WF = []
 denoised_save = []
 wf_denoised_save = []
+denoised_save_dyna = []
 crossings = []
 time_cumsum = []
 crossings = []
@@ -179,26 +267,49 @@ for run in run_nb:
                         # We reconstruct the signal with the filtered coeff
                         denoised = pywt.waverec(coeffs_filtered, wd_func+'4')
                         
-                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000):
+                        #print('start is :',start, 'end is : ', end)
+                        #if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000):
+                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000):   
+                            start, end = find_dynamic_window(denoised)
+                            time_dyna = (t>=start) & (t<=end)
                             #time_charge = (t>=np.argmax(denoised) - 350) & (t<=np.argmax(denoised) + 2125)
                             time_charge = (t>=1000) & (t<=4000)
 
                             amp_WF.append(np.max(pmt_rwf_bs))
                             wf_denoised_save.append(denoised)
                             denoised_save.append(np.sum(denoised))
+                            denoised_save_dyna.append(np.sum(denoised[time_dyna]))
                             #Integral in an automatic window is saved
-                            charge.append(np.sum(denoised[time_charge]))
+                            #charge.append(np.sum(denoised[time_charge]))
                             #charge.append(np.sum(denoised))
                         cpt_plot += 1
-                        if (plot == True) & (0<=cpt_plot<=3):
-
+                        if (plot == True) & (0<=cpt_plot<=10):
+                            
                             plt.plot(t, pmt_rwf_bs)
+                            plt.axvline(start, color='red')
+                            plt.axvline(end, color='red')
                             #plt.axhline(np.mean(pmt_rwf_bs[baseline]) + 3 * np.std(pmt_rwf_bs[baseline]), color='red')
                             plt.xlabel("Timebin (8ns)")
                             plt.ylabel("Charge (pes)")
                             plt.show()
 
+enebins = np.linspace(0, 4000, 200)
+cdyna, bins_dyna, _ = plt.hist(denoised_save_dyna, bins=enebins, label='dyna', alpha=0.5)
+cfix, bins_fix, _ = plt.hist(denoised_save, bins=enebins, label='fixed', alpha=0.5)
+bin_centers = (bins_dyna[:-1] + bins_dyna[1:]) / 2
+plt.yscale('log')
+plt.xlabel('Energy (pes)', fontsize=14)
+plt.ylabel('Entries (log)', fontsize=14)
+plt.legend()
+plt.show()
 
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save)
+diff = cdyna - cfix
+plt.plot(bin_centers, diff)
+plt.show()
+
+
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save_dyna)
+
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", wf_denoised_save)
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
+

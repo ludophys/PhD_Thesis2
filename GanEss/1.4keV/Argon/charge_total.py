@@ -31,21 +31,21 @@ Q_cum = []
 t03 = []
 t07 = []
 fluct = []
-wd_func = 'db'
+wd_func = 'coif'
 
 
 for i in range(len(run_nb)):
     for j in range(len(intervals)):
         try:
-            Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/"+run_nb[i]+"/Q_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
+            Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/Q_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
             Q_cum.extend(Q_file)
-            t03_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/"+run_nb[i]+"/t03_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
+            t03_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/t03_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
             print(t03)
             t03.extend(t03_file)
-            t07_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/"+run_nb[i]+"/t07_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
+            t07_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/t07_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
             t07.extend(t07_file)
 
-            fluct_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/"+run_nb[i]+"/fluct_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
+            fluct_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/fluct_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
             fluct.extend(fluct_file)
         except:
             continue
@@ -132,7 +132,7 @@ plt.ylabel('Energy (keV)')
 plt.axvline(mu + 3*sigma, color='orange', linestyle='--', label='$\mu$ + 3$\sigma$')
 plt.axvline(mu - 3*sigma, color='red', linestyle='--', label='$\mu$ - 3$\sigma$')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/TOT_diff2D_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_diff2D_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
 #print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
@@ -185,7 +185,7 @@ plt.axvline(mu2 + 3*sigma2, color='red', linestyle='--', label='$\mu$ + 3$\sigma
 plt.ylabel('Energy (keV)')
 plt.xscale('log')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/TOT_fluct2D_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_fluct2D_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
 #print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
@@ -207,7 +207,7 @@ plt.hist(Q_cum[m2] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut2 ({len(Q_cum
 plt.hist(Q_cum[m3] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut3 ({len(Q_cum[~m3])/Q_tot:.3f}%)')
 plt.hist(Q_cum[m4] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut4 ({len(Q_cum[~m4])/Q_tot:.3f}%)')
 
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/TOT_charge_"+wd_func+".npy", Q_cum[m4] * 5.9/to_kev)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".npy", Q_cum[m4] * 5.9/to_kev)
 
 plt.axvline(1.49, color='red', linestyle='--', label='1.49keV')
 plt.axvline(2.9, color='orange', linestyle='--', label='2.9keV')
@@ -216,7 +216,7 @@ plt.xlabel('Energy (keV)')
 plt.ylabel('Entries (log)')
 plt.yscale('log')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/TOT_charge_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
 #print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/charge_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 

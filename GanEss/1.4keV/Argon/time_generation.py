@@ -24,7 +24,7 @@ gas = str(sys.argv[4])
 nf = int(sys.argv[5])
 event_max = event_min + nf
 
-wf = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+wf = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
 print('wf loaded')
 t = np.linspace(0, 5000, 5000)
 
@@ -33,17 +33,18 @@ WF_save = np.array(wf)
 t03 = []
 t07 = []
 cpt=0
+plot = False
 
 for i in range(len(WF_save)):
     print('process : ', i/len(WF_save) * 100, '%')
     cumsum_ratio = np.cumsum(WF_save[i])/np.sum(WF_save[i])
     t03.append(t[np.searchsorted(cumsum_ratio, 0.3)])
     t07.append(t[np.searchsorted(cumsum_ratio, 0.7)])
-    cpt+=1
+    #cpt+=1
 
-    fig, ax1 = plt.subplots()
+    #fig, ax1 = plt.subplots()
 
-    if cpt < 20:
+    if (cpt < 20) & (plot==True):
         
         ax1.plot(t, WF_save[i], label='WF')
         ax1.set_ylabel("Charge (pes)")
@@ -61,7 +62,7 @@ for i in range(len(WF_save)):
         plt.show()
 
 
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/t03_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", t03)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/t07_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", t07)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/t03_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", t03)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/t07_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", t07)
 
 
