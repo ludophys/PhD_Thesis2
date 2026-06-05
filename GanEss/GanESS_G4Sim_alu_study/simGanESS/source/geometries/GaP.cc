@@ -320,7 +320,7 @@ void GaP::DefineConfigurationParameters()
 
 void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4Material* peek, G4Material* vacuum, G4Material* quartz, G4Material* tpb, G4LogicalVolume* logic_vessel_steel)
 {   
-
+    //// we declare the dimensions at the start because there are some dependencies between geometries
     pmt_.Construct();
     G4LogicalVolume* logic_pmt = pmt_.GetLogicalVolume();
     G4double pmt_length_ = pmt_.Length();
@@ -353,21 +353,29 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4double source_box_rad_ = 38. * mm;
     G4double source_box_thick_ = 3. * mm;
 
-    G4double cath_plate_rad_int_ = source_box_rad_; // Left plate of the light tube (hole in th center where we put the source box)
+    G4double cath_plate_rad_int_ = source_box_rad_ + 0.003*mm; // Left plate of the light tube (hole in th center where we put the source box)
     G4double cath_plate_rad_ext_ = lightTube_rad_; // Left plate of the light tube 
     G4double cath_plate_length_ = lightTube_thickn_;
     G4double cath_plate_z = lightTube_z + lightTube_length_/2 - cath_plate_length_/2; // Position of the plate on the left part of the light tube
 
+    // tpb for cath plate
+    G4double tpb_cath_plate_thick = 0.003 * mm;
+    G4double tpb_cath_plate_z = (cath_plate_z - cath_plate_length_/2 - tpb_cath_plate_thick/2);
+
     G4double source_plate_rad_ = source_box_rad_; // Small hole on the left plate to put the source box
     G4double source_plate_length_ = lightTube_thickn_/2 + 1.5*mm;
     G4double source_plate_z = cath_plate_z  + cath_plate_length_/2 - source_plate_length_/2; // Position of the Small hole on the left plate to put the source box
+
+    // tpb for source plate
+    G4double tpb_source_plate_thick = 0.003 * mm;
+    G4double tpb_source_plate_z = (source_plate_z - tpb_source_plate_thick/2 - source_plate_length_/2);
 
     G4double tpb_lightTube_rad_int_   = lightTube_rad_ - 0.003 * mm;
     G4double tpb_lightTube_rad_ext_   = lightTube_rad_;
     G4double tpb_lightTube_length_ = lightTube_length_ - cath_plate_length_;
     G4double tpb_lightTube_z = lightTube_z - cath_plate_length_/2;
 
-    G4double source_box_z_ = source_plate_z - source_plate_length_/2 - source_box_thick_/2; // Source box placed on the small hole of the light tube
+    G4double source_box_z_ = source_plate_z - source_plate_length_/2 - source_box_thick_/2 - tpb_source_plate_thick; // Source box placed on the small hole of the light tube
     
     G4double vsource_box_rad_ = source_box_rad_ - 1. * mm;
     G4double vsource_box_thick_ = source_box_thick_;
@@ -466,16 +474,35 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
                            dielectric_dielectric, .01);
     new G4LogicalSkinSurface("TPB_COATING_OPSURF", logic_tpb_light_tube, tpb_lightTube_coating_surf);
 
-    // Plate cathode (in GasDrift volume)
-    G4Tubs          *solid_cath_plate = new G4Tubs("CathPlate", cath_plate_rad_int_/2 , cath_plate_rad_ext_, cath_plate_length_/2, 0, 360*deg);
+    // cathode Plate (in GasDrift volume)
+    G4Tubs          *solid_cath_plate = new G4Tubs("CathPlate", cath_plate_rad_int_/2, cath_plate_rad_ext_, cath_plate_length_/2, 0, 360*deg);
     G4LogicalVolume *logic_cath_plate = new G4LogicalVolume(solid_cath_plate, teflon_mat_, "CathPlate");
     new G4PVPlacement(0, G4ThreeVector(0., 0., cath_plate_z - drift_z), logic_cath_plate, "CathPlate", logic_gas_drift, false, 0, true);
 
-    // Source plate (in GasDrift volume)
+    // tpb cathode Plate
+    G4Tubs          *solid_tpb_cath_plate = new G4Tubs("tpb_cath_plate", cath_plate_rad_int_/2, cath_plate_rad_ext_, tpb_cath_plate_thick/2, 0, 360*deg);
+    G4LogicalVolume *logic_tpb_cath_plate = new G4LogicalVolume(solid_tpb_cath_plate,tpb, "tpb_cath_plate");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., tpb_cath_plate_z - drift_z), logic_tpb_cath_plate, "tpb_cath_plate", logic_gas_drift, false, 0, true);
 
+    // Source plate (in GasDrift volume)
     G4Tubs          *solid_source_plate = new G4Tubs("sourcePlate", 0, source_plate_rad_/2, source_plate_length_/2, 0, 360*deg);
     G4LogicalVolume *logic_source_plate = new G4LogicalVolume(solid_source_plate, teflon_mat_, "sourcePlate");
     new G4PVPlacement(0, G4ThreeVector(0., 0., source_plate_z - drift_z), logic_source_plate, "sourcePlate", logic_gas_drift, false, 0, true);
+
+    // tpb source plate
+    G4Tubs          *solid_tpb_source_plate = new G4Tubs("tpb_sourcePlate", 0, source_plate_rad_/2, tpb_source_plate_thick/2, 0, 360*deg);
+    G4LogicalVolume *logic_tpb_source_plate = new G4LogicalVolume(solid_tpb_source_plate,tpb, "tpb_sourcePlate");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., tpb_source_plate_z - drift_z), logic_tpb_source_plate, "tpb_sourcePlate", logic_gas_drift, false, 0, true);
+
+    // tpb sides source plate
+    G4double tpb_sides_source_plate_z = cath_plate_z - source_plate_length_/2;
+    G4double tpd_sides_source_plate_length = cath_plate_length_ - source_plate_length_;
+    G4double tpb_sides_source_rad_int = (cath_plate_rad_int_ - 0.003*mm);
+    G4double tpb_sides_source_rad_ext = cath_plate_rad_int_;
+
+    G4Tubs          *solid_tpb_sides_source_plate = new G4Tubs("tpb_sides_sourcePlate", tpb_sides_source_rad_int/2, tpb_sides_source_rad_ext/2, tpd_sides_source_plate_length/2, 0, 360*deg);
+    G4LogicalVolume *logic_tpb_sides_source_plate = new G4LogicalVolume(solid_tpb_sides_source_plate,tpb, "tpb_sides_sourcePlate");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., tpb_sides_source_plate_z - drift_z), logic_tpb_sides_source_plate, "tpb_sides_sourcePlate", logic_gas_drift, false, 0, true);
 
     //Loop to generate the rings (Gas Drift volume)
     G4ThreeVector pos_rings = G4ThreeVector(0, 0, 0);
@@ -515,8 +542,6 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     IonizationSD* active_sd = new IonizationSD("/GaP/DRIFT");
     logic_gas_drift->SetSensitiveDetector(active_sd);
     G4SDManager::GetSDMpointer()->AddNewDetector(active_sd);
-
-
 
     //// EL gap volume (in vessel volume)
     G4Tubs          *solid_gas_el = new G4Tubs("GasEL", 0., meshBracket_rad_, (el_length_)/2, 0., 360.*deg);

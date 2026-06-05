@@ -1,0 +1,34 @@
+# Kripton
+#/Generator/Kr83mGenerator/region  AD_HOC
+#
+/Generator/IonGenerator/region  GasDrift
+/Generator/IonGenerator/atomic_number 26
+/Generator/IonGenerator/mass_number 55
+/Geometry/GaP/pressure 8.5 bar
+
+/Geometry/GaP/specific_vertex   0. 0. 63.6955 mm #center of the source box
+/Geometry/GaP/el_field 12.835 kilovolt/cm
+
+
+
+### PHYSICS
+/PhysicsList/Nexus/clustering           true
+/PhysicsList/Nexus/drift                true
+/PhysicsList/Nexus/electroluminescence  False
+
+
+### VERBOSITY
+/control/verbose   0
+/run/verbose       0
+/event/verbose     0
+/tracking/verbose  0
+
+#/process/had/verbose 4
+#/process/list
+
+
+### CONTROL
+/nexus/random_seed            -1
+/nexus/persistency/start_id   0
+#/nexus/persistency/output_file run_S2_WF_Ar
+/nexus/persistency/output_file test
