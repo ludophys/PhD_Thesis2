@@ -374,8 +374,8 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4double vsource_box_z_ = source_box_z_;
 
     G4double alu_foil_rad_ = source_box_rad_;
-    //G4double alu_foil_thick_ = 0.008 * mm; // Real thickness
-    G4double alu_foil_thick_ = 1. * mm;
+    G4double alu_foil_thick_ = 0.008 * mm; // Real thickness
+    //G4double alu_foil_thick_ = 1. * mm;
     G4double alu_foil_z_ = source_box_z_ - source_box_thick_/2 - alu_foil_thick_/2; // Z position of the surface of the source box
     
     G4double rings_rad_int_ = 156*mm;
