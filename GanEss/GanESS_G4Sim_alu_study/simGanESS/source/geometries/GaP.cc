@@ -319,11 +319,36 @@ void GaP::DefineConfigurationParameters()
 }
 
 void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4Material* peek, G4Material* vacuum, G4Material* quartz, G4Material* tpb, G4LogicalVolume* logic_vessel_steel)
-{   
+{   pmt_.SetSensorDepth(2);
     //// we declare the dimensions at the start because there are some dependencies between geometries
     pmt_.Construct();
+
+    //PMT R11410
+
+    G4double front_diam  = pmt_.FrontBodyDiameter();
+    G4double front_len   = pmt_.FrontBodyLength();
+
+    G4double rear_diam   = pmt_.RearBodyDiameter();
+    G4double rear_len    = pmt_.RearBodyLength();
+
+    G4double body_thick  = pmt_.BodyThickness();
+
+    G4double win_diam    = pmt_.WindowDiameter();
+    G4double win_thick   = pmt_.WindowThickness();
+
+    G4double pc_diam     = pmt_.PhotocathodeDiameter();
+    G4double pc_thick    = pmt_.PhotocathodeThickness();
+
     G4LogicalVolume* logic_pmt = pmt_.GetLogicalVolume();
-    G4double pmt_length_ = pmt_.Length();
+
+    //PMT Length as to be calculated 
+
+    G4double pmt_length_ = front_len + rear_len;
+
+    //PMTR7378A
+
+    //G4double pmt_length_ = pmt_.Length(); 
+
     G4double pmt_z  = 42.495*mm + pmt_length_/2;
 
     G4double tpb_coating_z = -pmt_z + pmt_length_/2 + tpb_coating_thickn_/2; // Z position of the surface of the PMTs
@@ -596,10 +621,13 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     /// Build PMT (in vessel volume)
     G4Tubs *solid_pmt = new G4Tubs("SolidPMT", 0., pmt_rad_, pmt_length_/2, 0., 360.*deg); // Hamamatsu pmt length: 43*mm | STEP pmt gap length: 57.5*mm
 
-    // Position pairs (x,Y) for PMTs
-    std::vector <float> pmt_PsX={-15.573, 20.68, -36.253, 0., 36.253, -20.68, 15.573};
-    std::vector <float> pmt_PsY={-32.871, -29.922, -2.949, 0., 2.949, 29.922, 32.871};
+    // Position pairs (x,Y) for PMTs for PMTR7378A
+    //std::vector <float> pmt_PsX={-15.573, 20.68, -36.253, 0., 36.253, -20.68, 15.573};
+    //std::vector <float> pmt_PsY={-32.871, -29.922, -2.949, 0., 2.949, 29.922, 32.871};
 
+    // Position pairs (x,Y) for PMTs for PMTR11410
+    std::vector <float> pmt_PsX={0.};
+    std::vector <float> pmt_PsY={0.};
 
     /// Evaporated TPB
     G4Tubs          *solid_tpb_coating = new G4Tubs("CoatingTPB", 0, pmt_rad_ , tpb_coating_thickn_/2, 0, 360*deg);
