@@ -200,12 +200,12 @@ plt.show()
 # we apply them one by on to see what is the ratio of events rejected by each and what are the effects of each on the final energy spectrum
 
 m1 = (fluct >= mu2 - 3*sigma2)
-m2 = m1 & (fluct <= mu2 + 3*sigma2)
+m2 = m1 & (fluct <= 5e-7)
 m3 = m2 & (diff >= mu - 3*sigma)
 m4 = m3 & (diff <= mu + 3*sigma)
 m5 = m4 & (np.max(wf) >= 3)
 
-mask_charge = (fluct >= mu2 - 3*sigma2) & (fluct <= mu2 + 3*sigma2) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) & (np.max(wf) >= 3)
+mask_charge = (fluct >= mu2 - 3*sigma2) & (fluct <= 5e-7) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) & (np.max(wf) >= 3)
 
 chargetot = len(charge)
 
@@ -245,7 +245,7 @@ col = 4
 fig, axes = plt.subplots(row, col, figsize=(size_plot * col ,size_plot * row), constrained_layout=True)
 axes = axes.flatten()
 
-mask_ene = (charge * 5.9/to_kev >= 1.3) & (charge * 5.9/to_kev <= 1.6)
+mask_ene = ((charge * 5.9/to_kev) >= 1.3) & ((charge * 5.9/to_kev) <= 1.6)
 
 t = np.linspace(0, 40, 5000)
 #wfplot0 = wf[mask_ene]
@@ -273,12 +273,12 @@ t = np.linspace(0, 40, 5000)
 #axes[2].set_ylabel("Charge (pes)")
 
 
-c3 = mask_ene + m3
+c3 = mask_ene & m4
 wfplot3 = wf[c3]
 t_broadcast = np.broadcast_to(t[:, np.newaxis], wfplot3.T.shape)
 axes[3].hist2d(t_broadcast.flatten(), wfplot3.T.flatten(), bins=[200, 200], cmap='viridis', norm=LogNorm())
 
-axes[3].set_xlabel("Time ($\mu$s)")
-axes[3].set_ylabel("Charge (pes)")
+axes[3].set_xlabel("Time ($\mu$s)", fontsize = 14)
+axes[3].set_ylabel("Charge (pes)", fontsize = 14)
 
 plt.show()

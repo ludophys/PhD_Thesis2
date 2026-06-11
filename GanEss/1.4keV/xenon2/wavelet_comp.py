@@ -14,7 +14,7 @@ from matplotlib.colors import LogNorm
 
 import sys
 
-run_nb = ['3131', '3132', '3133, 3134']
+run_nb = [2661, 2662, 2663]
 intervals = ['0-100', '101-301', '101-201', '202-302']
 
 #Definition of binnings for histo
@@ -33,7 +33,7 @@ for i in range(len(run_nb)):
     for j in range(len(intervals)):
         for k in range(len(wd_func)):
             try:
-                Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/Q_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func[k]+".npy")
+                Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/Q_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func[k]+".npy")
                 if wd_func[k] == 'db':               
                     Q_cum_db.extend(Q_file)
                 if wd_func[k] == 'sym':
@@ -71,11 +71,11 @@ plt.legend()
 plt.show()
 
 
-db_noise = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/3131/sigma_noise_Ar_['3131']_evts_[0-100]_db.npy")
-sym_noise = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/3131/sigma_noise_Ar_['3131']_evts_[0-100]_sym.npy")
-coif_noise = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/3131/sigma_noise_Ar_['3131']_evts_[0-100]_coif.npy")
+db_noise = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/2661/sigma_noise_Xe_['2661']_evts_[0-100]_db.npy")
+sym_noise = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/2661/sigma_noise_Xe_['2661']_evts_[0-100]_sym.npy")
+coif_noise = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/2661/sigma_noise_Xe_['2661']_evts_[0-100]_coif.npy")
 
-noisebins = np.linspace(0.15, 0.35, 50)
+noisebins = np.linspace(0.3, 0.6, 50)
 
 cdb, binsdb, _ = plt.hist(db_noise, bins = noisebins, density=True, alpha=0.5, label='db')
 csym, binssym, _ = plt.hist(sym_noise, bins = noisebins, density=True, alpha=0.5, label='sym')

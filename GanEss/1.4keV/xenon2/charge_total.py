@@ -17,40 +17,51 @@ from matplotlib.colors import LogNorm
 #Reading of input param from source code noise_analysis.sh
 import sys
 
-run_nb = ['3131', '3132', '3133, 3134']
-intervals = ['0-100', '101-301', '101-201', '202-302']
+run_nb = ['2661', '2662', '2663']
+intervals = ['0-200', '0-300']#, '101-301', '101-201', '202-302']
 
 #Definition of binnings for histo
 
-fluctbins = np.linspace(8e-8, 8e-7, 200)
+fluctbins = np.linspace(8e-8, 5e-6, 200)
 enebins = np.linspace(0, 10000, 200)
 enebinskev = np.linspace(0, 8, 60)
 timebins = np.linspace(0, 4, 80)
 
 Q_cum = []
+Q_init_cum = []
 t03 = []
 t07 = []
 fluct = []
+wf = []
 wd_func = 'coif'
+
+wfplot = True
 
 
 for i in range(len(run_nb)):
     for j in range(len(intervals)):
         try:
-            Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/Q_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
+            Q_init_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/Q_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            Q_init_cum.extend(Q_init_file)
+            Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/Q_den_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             Q_cum.extend(Q_file)
-            t03_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/t03_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
-            print(t03)
+            t03_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/t03_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             t03.extend(t03_file)
-            t07_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/t07_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
+            t07_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/t07_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             t07.extend(t07_file)
 
-            fluct_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/fluct_Ar_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_db.npy")
+            fluct_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/fluct_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             fluct.extend(fluct_file)
+            if wfplot==True:
+                wf_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/wf_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+                wf.extend(wf_file)
         except:
             continue
 
 #Find the 5.9 keV peak and do the conversion from ADC counts to keV
+wf = np.array(wf)
+print('len wf at start is :', wf)
+Q_init_cum = np.array(Q_init_cum)
 Q_cum = np.array(Q_cum)
 mask_to_kev = (Q_cum>=2000)
 counts, bins, __ = plt.hist(Q_cum[mask_to_kev], bins=enebins)
@@ -127,10 +138,11 @@ plt.show()
 # 2d histo diff variable
 
 h = plt.hist2d(diff, Q_cum * 5.9/to_kev, bins=[timebins, enebinskev], cmap='viridis', norm=LogNorm())
-plt.xlabel('diff (t07-t03 in $\mu$s)')
-plt.ylabel('Energy (keV)')
-plt.axvline(mu + 3*sigma, color='orange', linestyle='--', label='$\mu$ + 3$\sigma$')
-plt.axvline(mu - 3*sigma, color='red', linestyle='--', label='$\mu$ - 3$\sigma$')
+plt.xlabel('diff (t07-t03 in $\mu$s)', fontsize = 14)
+plt.ylabel('Energy (keV)', fontsize = 14)
+plt.axvline(mu - 3*sigma, color='orange', linestyle='--', label='$\mu$ - 3$\sigma$')
+plt.axvline(mu + 3*sigma, color='red', linestyle='--', label='$\mu$ + 3$\sigma$')
+
 plt.legend()
 plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_diff2D_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
 #print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
@@ -179,10 +191,15 @@ plt.show()
 ### 6th plot (We don't save anything)
 
 h = plt.hist2d(fluct, Q_cum * 5.9/to_kev, bins=[fluctbins, enebinskev], cmap='viridis', norm=LogNorm())
-plt.xlabel('fluct')
-plt.axvline(mu2 - 3*sigma2, color='orange', linestyle='--', label='$\mu$ - 3$\sigma$')
-plt.axvline(mu2 + 3*sigma2, color='red', linestyle='--', label='$\mu$ + 3$\sigma$')
-plt.ylabel('Energy (keV)')
+cutmin_fluct = 2e-7
+plt.xlabel('fluct', fontsize = 14)
+#plt.axvline(mu2 - 3*sigma2, color='orange', linestyle='--', label='$\mu$ - 3$\sigma$')
+#plt.axvline(cutmin_fluct, color='orange', linestyle='--', label=str(cutmin_fluct))
+cutmax_fluct = 2e-6
+#plt.axvline(mu2 + 3*sigma2, color='red', linestyle='--', label='$\mu$ + 3$\sigma$')
+plt.axvline( cutmax_fluct, color='red', linestyle='--', label=str(cutmax_fluct))
+
+plt.ylabel('Energy (keV)', fontsize = 14)
 plt.xscale('log')
 plt.legend()
 plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_fluct2D_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
@@ -190,35 +207,63 @@ plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_fluct
 plt.show()
 
 
-m1 = (fluct >= mu2 - 3*sigma2)
-m2 = m1 & (fluct <= mu2 + 3*sigma2)
+#m1 = (fluct >= mu2 - 3*sigma2)
+m1 = (fluct <= cutmax_fluct)
+#m2 = m1 & (fluct <= mu2 + 3*sigma2)
+m2 = m1 & (fluct <= cutmax_fluct)
+
 m3 = m2 & (diff >= mu - 3*sigma)
 m4 = m3 & (diff <= mu + 3*sigma)
 #m5 = m4 & (np.max(wf) >= 3)
 
-mask_charge = (fluct >= mu2 - 3*sigma2) & (fluct <= mu2 + 3*sigma2) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) #& (np.max(wf) >= 3)
+#mask_charge = (fluct >= mu2 - 3*sigma2) & (fluct <= mu2 + 3*sigma2) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) #& (np.max(wf) >= 3)
+#mask_charge = (fluct >= cutmin_fluct) & (fluct <= cutmax_fluct) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) #& (np.max(wf) >= 3)
+mask_charge = (fluct <= cutmax_fluct) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) #& (np.max(wf) >= 3)
 
-
-
-plt.hist(Q_cum[mask_charge] * 5.9/to_kev, bins=enebinskev)
+#plt.hist(Q_cum[mask_charge] * 5.9/to_kev, bins=enebinskev)
 Q_tot = len(Q_cum)
-plt.hist(Q_cum[m1] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut1 ({len(Q_cum[~m1])/Q_tot:.3f}%)')
-plt.hist(Q_cum[m2] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut2 ({len(Q_cum[~m2])/Q_tot:.3f}%)')
-plt.hist(Q_cum[m3] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut3 ({len(Q_cum[~m3])/Q_tot:.3f}%)')
-plt.hist(Q_cum[m4] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut4 ({len(Q_cum[~m4])/Q_tot:.3f}%)')
+plt.figure(figsize=(8, 8))
+plt.hist(Q_init_cum * 5.9/to_kev, enebinskev, label=f'No cuts and before denoising', histtype='step', linewidth=1.5)
+plt.hist(Q_cum * 5.9/to_kev, enebinskev, label=f'No cuts and after denoising', histtype='step', linewidth=1.5)
+#plt.hist(Q_cum[m1] * 5.9/to_kev, enebinskev, label=f'cut1 (removes {len(Q_cum[~m1])/Q_tot:.3f}%)', histtype='step')
+plt.hist(Q_cum[m2] * 5.9/to_kev, enebinskev, label=f'cut1 (removes {len(Q_cum[~m2])/Q_tot:.3f}%)', histtype='step', linewidth=1.5)
+plt.hist(Q_cum[m3] * 5.9/to_kev, enebinskev,label=f'cut2 (removes {len(Q_cum[~m3])/Q_tot:.3f}%)', histtype='step', linewidth=1.5)
+plt.hist(Q_cum[m4] * 5.9/to_kev, enebinskev, label=f'cut3 (removes {len(Q_cum[~m4])/Q_tot:.3f}%)', histtype='step', linewidth=1.5)
 
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".npy", Q_cum[m4] * 5.9/to_kev)
 
 plt.axvline(1.49, color='red', linestyle='--', label='1.49keV')
-plt.axvline(2.9, color='orange', linestyle='--', label='2.9keV')
+plt.axvline(4.1, color='orange', linestyle='--', label='4.1keV')
 plt.axvline(5.9, color='green', linestyle='--', label='5.9keV')
-plt.xlabel('Energy (keV)')
-plt.ylabel('Entries (log)')
+plt.xlabel('Energy (keV)', fontsize=14)
+plt.ylabel('Entries (log)', fontsize=14)
 plt.yscale('log')
-plt.legend()
+plt.legend(fontsize=12, loc='lower right')
 plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
 #print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/charge_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
+
+if wfplot==True:
+    size_plot = 8
+    row = 2
+    col = 4
+    fig, axes = plt.subplots(row, col, figsize=(size_plot * col ,size_plot * row), constrained_layout=True)
+    axes = axes.flatten()
+
+    mask_ene = ((Q_cum * 5.9/to_kev) >= 1.3) & ((Q_cum * 5.9/to_kev) <= 1.6)
+    t = np.linspace(0, 40, 5000)
+
+    print('len wf is :', len(wf))
+
+    c3 = mask_ene & m4
+    wfplot3 = wf[c3][:50000]
+    t_broadcast = np.broadcast_to(t[:, np.newaxis], wfplot3.T.shape)
+    axes[3].hist2d(t_broadcast.flatten(), wfplot3.T.flatten(), bins=[200, 200], cmap='viridis', norm=LogNorm())
+
+    axes[3].set_xlabel("Time ($\mu$s)", fontsize = 14)
+    axes[3].set_ylabel("Charge (pes)", fontsize = 14)
+
+    plt.show()
 
 
 
