@@ -72,6 +72,8 @@ time_cumsum = []
 crossings = []
 
 sigma_noise = []
+sigma_noise_baseline = []
+Q_cons = []
 
 
 cpt_plot = 0
@@ -151,7 +153,7 @@ for run in run_nb:
                     #We remove events that are not entirely saved because of the boarders of the window
 
                     if (wf_charge >= ene_range_min) & (wf_charge <= ene_range_max):
-
+                        
                         #We save WF that pass cuts
                         WF_save.append(pmt_rwf_bs)
 
@@ -178,7 +180,13 @@ for run in run_nb:
 
                         # We reconstruct the signal with the filtered coeff
                         denoised = pywt.waverec(coeffs_filtered, wd_func+'4')
-                        
+
+                        # We test the charge conservation
+                        Q_cons.append(np.abs(np.sum(denoised) - np.sum(pmt_rwf_bs))/np.sum(pmt_rwf_bs))
+
+                        #We test the efficiency to reduce noise
+                        sigma_noise_baseline.append(np.mean(denoised[baseline]))
+
                         if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000):
                             #time_charge = (t>=np.argmax(denoised) - 350) & (t<=np.argmax(denoised) + 2125)
                             time_charge = (t>=1000) & (t<=4000)
@@ -203,3 +211,5 @@ np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_"+str(ga
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_den_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save)
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", wf_denoised_save)
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_cons_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_cons)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/sigma_noise_bs_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise_baseline)
