@@ -76,6 +76,22 @@ sigma_noise_baseline = []
 Q_cons = []
 
 
+def threshold_cross(y, threshold, min_distance=100):
+    y = np.asarray(y)
+    diff = y - threshold
+    crossings = np.where(np.diff(np.sign(diff)) != 0)[0]
+
+    if len(crossings) == 0:
+        return 0
+
+    filtered = [crossings[0]]
+    for c in crossings[1:]:
+        if c - filtered[-1] >= min_distance:
+            filtered.append(c)
+
+    return len(filtered)
+
+
 cpt_plot = 0
 for run in run_nb:
     folder = '/Users/ldonneger/Desktop/PhD_Thesis2/GapData/R'+str(run)+'/raw/'
@@ -186,8 +202,8 @@ for run in run_nb:
 
                         #We test the efficiency to reduce noise
                         sigma_noise_baseline.append(np.mean(denoised[baseline]))
-
-                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000):
+                        thesh_cross = threshold_cross(denoised, threshold)
+                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000) & (thesh_cross == 2):
                             #time_charge = (t>=np.argmax(denoised) - 350) & (t<=np.argmax(denoised) + 2125)
                             time_charge = (t>=1000) & (t<=4000)
 
@@ -199,8 +215,12 @@ for run in run_nb:
                             #charge.append(np.sum(denoised))
                         cpt_plot += 1
                         if (plot == True) & (0<=cpt_plot<=3):
+                            
+                            plt.plot(t, denoised)
+                            plt.axhline(threshold, color='red', linestyle='--')
+                            plt.axvline(1000, color='red', linestyle='--')
+                            plt.axvline(1050, color='red', linestyle='--')
 
-                            plt.plot(t, pmt_rwf_bs)
                             #plt.axhline(np.mean(pmt_rwf_bs[baseline]) + 3 * np.std(pmt_rwf_bs[baseline]), color='red')
                             plt.xlabel("Timebin (8ns)")
                             plt.ylabel("Charge (pes)")
