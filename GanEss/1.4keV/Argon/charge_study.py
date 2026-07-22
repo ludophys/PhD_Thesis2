@@ -27,11 +27,11 @@ nf = int(sys.argv[5])
 event_max = event_min + nf
 
 #loading of data
-charge = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
-wf = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
-t03 = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/t03_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
-t07 = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/t07_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
-fluct = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+charge = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+wf = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+t03 = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/t03_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+t07 = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/t07_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+fluct = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
 
 #Definition of binnings for histo
 fluctbins = np.linspace(8e-8, 8e-7, 200)
@@ -59,14 +59,14 @@ histo1 = np.column_stack((c1, b1_centers))
 
 # We cannot process all the data at the same time because of memory so we need to accumulate the histo counts latter
 # IMPORTANT : the binnings have to stay fixed for a same set of data, if not we cannot accumulate
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/diff1D_histo_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", histo1)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff1D_histo_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", histo1)
 
 plt.xlabel('diff')
 plt.ylabel('Entries (log)')
 plt.yscale('log')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/diff1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/diff1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 ### 2nd plot
@@ -113,8 +113,8 @@ plt.xlabel("Valeur")
 plt.ylabel("Counts")
 #plt.yscale('log')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/diff_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/diff_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 ### 3rd plot 
@@ -126,8 +126,8 @@ plt.ylabel('Energy (keV)')
 plt.axvline(mu + 3*sigma, color='orange', linestyle='--', label='$\mu$ + 3$\sigma$')
 plt.axvline(mu - 3*sigma, color='red', linestyle='--', label='$\mu$ - 3$\sigma$')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/diff2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/diff2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 ### 4th plot
@@ -136,13 +136,13 @@ plt.show()
 c2, b2, _ = plt.hist(fluct, bins=fluctbins)
 b2_centers = 0.5 * (b2[:-1] + b2[1:])
 histo2 = np.column_stack((c2, b2_centers))
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct1D_histo_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", histo2)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct1D_histo_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", histo2)
 
 plt.xlabel('fluct')
 plt.ylabel('Entries (log)')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 ### 5th plot (We don't save anything)
@@ -179,8 +179,8 @@ plt.xlabel("Valeur")
 plt.ylabel("Counts")
 
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 ### 6th plot (We don't save anything)
@@ -192,8 +192,8 @@ plt.axvline(mu2 + 3*sigma2, color='red', linestyle='--', label='$\mu$ + 3$\sigma
 plt.ylabel('Energy (keV)')
 plt.xscale('log')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct2D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 #Here we apply all the cuts determined from the several histograms before
@@ -218,7 +218,7 @@ print('5 : ', len(charge[~m5])/chargetot)
 c2, b2, _ = plt.hist(fluct, bins=fluctbins)
 b2_centers = 0.5 * (b2[:-1] + b2[1:])
 histo2 = np.column_stack((c2, b2_centers))
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/fluct1D_histo_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", histo2)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct1D_histo_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", histo2)
 
 plt.hist(charge[m1] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut1 ({len(charge[~m1])/chargetot:.3f}%)')
 plt.hist(charge[m2] * 5.9/to_kev, enebinskev, alpha=0.3, label=f'cut2 ({len(charge[~m2])/chargetot:.3f}%)')
@@ -233,8 +233,8 @@ plt.xlabel('Energy (keV)')
 plt.ylabel('Entries (log)')
 plt.yscale('log')
 plt.legend()
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/charge_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/charge_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
+plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/charge_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/charge_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 # Here the commented code is for plotting wf distrib with the cuts, we might want to just show this plot for a sample but it is heavy to produce each time
@@ -273,12 +273,12 @@ t = np.linspace(0, 40, 5000)
 #axes[2].set_ylabel("Charge (pes)")
 
 
-c3 = mask_ene + m3
+c3 = mask_ene & m4
 wfplot3 = wf[c3]
 t_broadcast = np.broadcast_to(t[:, np.newaxis], wfplot3.T.shape)
 axes[3].hist2d(t_broadcast.flatten(), wfplot3.T.flatten(), bins=[200, 200], cmap='viridis', norm=LogNorm())
 
-axes[3].set_xlabel("Time ($\mu$s)")
-axes[3].set_ylabel("Charge (pes)")
+axes[3].set_xlabel("Time ($\mu$s)", fontsize=14)
+axes[3].set_ylabel("Charge (pes)", fontsize=14)
 
 plt.show()
