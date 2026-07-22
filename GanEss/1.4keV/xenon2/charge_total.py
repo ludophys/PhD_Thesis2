@@ -17,7 +17,7 @@ from matplotlib.colors import LogNorm
 #Reading of input param from source code noise_analysis.sh
 import sys
 
-run_nb = ['2661', '2662']#, '2663']
+run_nb = ['2661', '2662', '2663']
 intervals = ['0-200']#, '101-301', '101-201', '202-302']
 
 #Definition of binnings for histo
@@ -42,22 +42,22 @@ wfplot = False
 for i in range(len(run_nb)):
     for j in range(len(intervals)):
         try:
-            Q_init_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/Q_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            Q_init_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/Q_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             Q_init_cum.extend(Q_init_file)
-            Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/Q_den_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/Q_den_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             Q_cum.extend(Q_file)
-            t03_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/t03_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            t03_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/t03_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             t03.extend(t03_file)
-            t07_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/t07_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            t07_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/t07_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             t07.extend(t07_file)
 
-            sigma_noise_bs_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/sigma_noise_bs_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            sigma_noise_bs_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/sigma_noise_bs_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             sigma_noise_bs.extend(sigma_noise_bs_file)
             
-            fluct_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/fluct_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            fluct_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/fluct_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             fluct.extend(fluct_file)
             if wfplot==True:
-                wf_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+run_nb[i]+"/wf_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+                wf_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/wf_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
                 wf.extend(wf_file)
         except:
             continue
@@ -80,7 +80,7 @@ plt.show()
 bin_centers = (bins[:-1] + bins[1:]) / 2
 
 to_kev = bin_centers[np.argmax(counts)]
-#print('to kev is :', to_kev)
+
 
 
 t03 = np.array(t03)
@@ -88,10 +88,6 @@ t07 = np.array(t07)
 diff = (t07 - t03) * 40/5000
 
 fluct = np.array(fluct)
-#print('len(diff) is :', len(diff))
-#print('len(fluct) is :', len(fluct))
-
-
 
 plt.hist(diff, bins=timebins)
 plt.show()
@@ -139,10 +135,7 @@ plt.axvline(xmin, color='k', ls='--')
 plt.axvline(xmax, color='k', ls='--')
 plt.xlabel("Valeur")
 plt.ylabel("Counts")
-#plt.yscale('log')
 plt.legend()
-#plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-#print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/diff_fit1D_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 
@@ -158,7 +151,7 @@ h = plt.hist2d(diff, Q_cum * 5.9/to_kev,
 plt.xlabel(r'Time difference ($t_{07}-t_{03}$) ($\mu$s)', fontsize=13)
 plt.ylabel('Energy (keV)', fontsize=13)
 
-plt.axvline(mu - 3*sigma, color='orange', linestyle='--', linewidth=1.5,
+plt.axvline(mu - 3*sigma, color='red', linestyle='-', linewidth=1.5,
             label=r'$\mu - 3\sigma$')
 plt.axvline(mu + 3*sigma, color='red', linestyle='--', linewidth=1.5,
             label=r'$\mu + 3\sigma$')
@@ -169,7 +162,7 @@ plt.tick_params(axis='both', which='major', direction='in',
 cbar = plt.colorbar()
 cbar.set_label('Counts', fontsize=12)
 
-plt.legend(frameon=True, fontsize=11, framealpha=0.9)
+plt.legend(title='Xenon',frameon=True, fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
 
@@ -228,7 +221,7 @@ h = plt.hist2d(fluct, Q_cum * 5.9/to_kev,
                norm=LogNorm())
 
 cutmax_fluct = mu2 + 7*sigma2
-plt.axvline(cutmax_fluct, color='red', linestyle='--', linewidth=1.5,
+plt.axvline(cutmax_fluct, color='red', linestyle='-', linewidth=1.5,
             label=r'$\mu + 7\sigma$')
 
 plt.xlabel('Cs fluctuation', fontsize=13)
@@ -242,7 +235,7 @@ plt.tick_params(axis='both', which='major', direction='in',
 cbar = plt.colorbar()
 cbar.set_label('Counts', fontsize=12)
 
-plt.legend(frameon=True, fontsize=11, framealpha=0.9)
+plt.legend(title='Xenon',frameon=True, fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
 
@@ -251,21 +244,12 @@ plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_fluct
 
 plt.show()
 
-
-#m1 = (fluct >= mu2 - 3*sigma2)
-#m1 = (fluct >= cutmin_fluct)
-#m2 = m1 & (fluct <= mu2 + 3*sigma2)
 m2 = (fluct <= cutmax_fluct)
-
 m3 = m2 & (diff >= mu - 3*sigma)
 m4 = m3 & (diff <= mu + 3*sigma)
-#m5 = m4 & (np.max(wf) >= 3)
 
-#mask_charge = (fluct >= mu2 - 3*sigma2) & (fluct <= mu2 + 3*sigma2) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) #& (np.max(wf) >= 3)
 mask_charge = (fluct <= cutmax_fluct) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) #& (np.max(wf) >= 3)
-#mask_charge = (fluct <= cutmax_fluct) & (diff >= mu - 3*sigma) & (diff <= mu + 3*sigma) #& (np.max(wf) >= 3)
 
-#plt.hist(Q_cum[mask_charge] * 5.9/to_kev, bins=enebinskev)
 Q_tot = len(Q_init_cum)
 print('Number of events : ', Q_tot)
 
@@ -295,11 +279,11 @@ plt.axvline(1.49, color='0.3', linestyle='--', linewidth=1.5)
 plt.axvline(4.10, color='0.3', linestyle='--', linewidth=1.5)
 plt.axvline(5.90, color='0.3', linestyle='--', linewidth=1.5)
 
-plt.text(1.49, 1e2, '1.49 keV', rotation=90, fontsize=10,
+plt.text(1.49, 3e2, '1.49 keV', rotation=90, fontsize=10,
          ha='right', va='center')
-plt.text(4.10, 1e2, '4.10 keV', rotation=90, fontsize=10,
+plt.text(4.10,3e2, '4.10 keV', rotation=90, fontsize=10,
          ha='right', va='center')
-plt.text(5.90, 1e2, '5.90 keV', rotation=90, fontsize=10,
+plt.text(5.90, 3e2, '5.90 keV', rotation=90, fontsize=10,
          ha='right', va='center')
 
 plt.xlabel('Energy spectrum (keV)', fontsize=15)
@@ -318,13 +302,12 @@ plt.minorticks_on()
 
 plt.grid(axis='y', which='both', alpha=0.25)
 
-plt.legend(frameon=True, fontsize=11, loc='lower right', framealpha=0.9)
+plt.legend(title='Xenon',frameon=True, fontsize=11, loc='lower right', framealpha=0.9)
 
 plt.tight_layout()
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".npy", Q_cum[m4] * 5.9/to_kev)
 
 plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
-#print("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/charge_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".pdf")
 plt.show()
 
 if wfplot==True:
