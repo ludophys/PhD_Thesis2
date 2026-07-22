@@ -71,8 +71,24 @@ crossings = []
 time_cumsum = []
 crossings = []
 
+Q_cons = []
 sigma_noise = []
+sigma_noise_baseline = []
 
+def threshold_cross(y, threshold, min_distance=100):
+    y = np.asarray(y)
+    diff = y - threshold
+    crossings = np.where(np.diff(np.sign(diff)) != 0)[0]
+
+    if len(crossings) == 0:
+        return 0
+
+    filtered = [crossings[0]]
+    for c in crossings[1:]:
+        if c - filtered[-1] >= min_distance:
+            filtered.append(c)
+
+    return len(filtered)
 
 cpt_plot = 0
 for run in run_nb:
@@ -178,8 +194,15 @@ for run in run_nb:
 
                         # We reconstruct the signal with the filtered coeff
                         denoised = pywt.waverec(coeffs_filtered, wd_func+'4')
-                        
-                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000):
+                       
+                        # We test the charge conservation
+                        Q_cons.append(np.abs(np.sum(denoised) - np.sum(pmt_rwf_bs))/np.sum(pmt_rwf_bs))
+
+                        #We test the efficiency to reduce noise
+                        sigma_noise_baseline.append(np.mean(denoised[baseline]))
+                        thesh_cross = threshold_cross(denoised, threshold)
+
+                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000) & (thesh_cross == 2):
                             #time_charge = (t>=np.argmax(denoised) - 350) & (t<=np.argmax(denoised) + 2125)
                             time_charge = (t>=1000) & (t<=4000)
 
@@ -187,7 +210,7 @@ for run in run_nb:
                             wf_denoised_save.append(denoised)
                             denoised_save.append(np.sum(denoised))
                             #Integral in an automatic window is saved
-                            charge.append(np.sum(denoised[time_charge]))
+                            charge.append(np.sum(pmt_rwf_bs))
                             #charge.append(np.sum(denoised))
                         cpt_plot += 1
                         if (plot == True) & (0<=cpt_plot<=3):
@@ -198,7 +221,9 @@ for run in run_nb:
                             plt.ylabel("Charge (pes)")
                             plt.show()
 
-
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", wf_denoised_save)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", charge)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_den_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", wf_denoised_save)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_cons_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_cons)
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_bs_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise_baseline)
