@@ -1,0 +1,21 @@
+ChannelGain: Ganancias de los sensores. Los valores usados en NEXT100 son promedios de los de NEW, está el mismo valor para todos los sensores.
+
+ChannelMapping: Relación entre los canales MC y los de la electrónica. En NEXT100 hemos puesto todos los valores iguales (elecID = sensorID).
+
+ChannelMask: Canales enmascarados por funcionamiento incorrecto. La idea es poner ahí los que fallen en el detector real. En NEXT100 la tabla está vacía.
+
+ChannelPosition: Posiciones de los sensores según su sensorID.
+
+DetectorGeo: Dimensiones del detector. Creo que no se usa para nada aún pero IC la espera.
+
+PmtBlr: Coeficientes para el BLR. En NEXT100 no está implementado, así que la tabla está vacía.
+
+PMTFELowFrequencyNoise: Ruido de los front ends de los pmts. Tampoco está implementado en NEXT100 así que la tabla está vacía.
+
+PMTFEMapping: Relación de PMTs conectados a cada Front End. No implementado en NEXT100, tabla vacía.
+
+PMTNoiseRms: RMS de los PMTs. No implementado en NEXT100, tabla vacía.
+
+SipmBaseline: Baseline de cada SiPM. En NEXT100 tenemos un valor estandar para todos los sensores (50).
+
+SipmPDFNoise: Se genera con el notebook. Contiene las PDFs sampleadas a partir de datos reales de NEW.

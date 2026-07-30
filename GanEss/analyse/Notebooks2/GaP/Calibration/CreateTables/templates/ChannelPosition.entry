@@ -1,0 +1,1 @@
+INSERT INTO ChannelPosition (MinRun, MaxRun, SensorID, Label, Type, X, Y) VALUES ({MinRun}, {MaxRun}, {SensorID}, "{Label}", "{Type}", {X}, {Y});

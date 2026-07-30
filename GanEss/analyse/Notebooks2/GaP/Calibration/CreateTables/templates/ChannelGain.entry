@@ -1,0 +1,1 @@
+INSERT INTO ChannelGain(MinRun, MaxRun, SensorID, Centroid, ErrorCentroid, Sigma, ErrorSigma) VALUES ({MinRun}, {MaxRun}, {SensorID}, {Centroid}, {ErrorCentroid}, {Sigma}, {ErrorSigma});

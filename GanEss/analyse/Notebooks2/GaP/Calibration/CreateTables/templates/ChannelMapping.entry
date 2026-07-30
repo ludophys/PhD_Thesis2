@@ -1,0 +1,1 @@
+INSERT INTO ChannelMapping (MinRun, MaxRun, ElecID, SensorID) VALUES ({MinRun}, {MaxRun}, {ElecID}, {SensorID});

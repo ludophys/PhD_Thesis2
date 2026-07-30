@@ -1,0 +1,1 @@
+INSERT INTO SipmBaseline (MinRun, MaxRun, SensorID, Energy) VALUES ({MinRun}, NULL, {SensorID}, {Energy});

@@ -1,0 +1,1 @@
+INSERT INTO `DetectorGeo` VALUES ({XMIN}, {XMAX}, {YMIN}, {YMAX}, {ZMIN}, {ZMAX}, {RMAX});
