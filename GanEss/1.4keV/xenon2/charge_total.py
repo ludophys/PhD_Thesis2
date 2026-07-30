@@ -37,27 +37,30 @@ sigma_noise_bs = []
 wd_func = 'coif'
 
 wfplot = False
-
+save = True
+folder = 'data_27-07_4'
 
 for i in range(len(run_nb)):
     for j in range(len(intervals)):
         try:
-            Q_init_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/Q_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            Q_init_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+folder+"/Q_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             Q_init_cum.extend(Q_init_file)
-            Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/Q_den_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            Q_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+folder+"/Q_den_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             Q_cum.extend(Q_file)
-            t03_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/t03_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            t03_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+folder+"/t03_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             t03.extend(t03_file)
-            t07_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/t07_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            t07_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+folder+"/t07_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             t07.extend(t07_file)
 
-            sigma_noise_bs_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/sigma_noise_bs_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+            sigma_noise_bs_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+folder+"/sigma_noise_bs_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             sigma_noise_bs.extend(sigma_noise_bs_file)
-            
-            fluct_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/fluct_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+
+            fluct_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+folder+"/fluct_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
             fluct.extend(fluct_file)
             if wfplot==True:
-                wf_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/data_22-07/wf_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+                wf_file = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/"+folder+"/wf_Xe_['"+run_nb[i]+"']_evts_["+intervals[j]+"]_"+wd_func+".npy")
+                print(np.shape(wf_file))
+                
                 wf.extend(wf_file)
         except:
             continue
@@ -165,9 +168,9 @@ cbar.set_label('Counts', fontsize=12)
 plt.legend(title='Xenon',frameon=True, fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
-
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_diff2D_"+wd_func+".pdf",
-            dpi=600, bbox_inches="tight")
+if save == True:
+    plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_diff2D_"+wd_func+".pdf",
+                dpi=600, bbox_inches="tight")
 
 plt.show()
 
@@ -238,9 +241,9 @@ cbar.set_label('Counts', fontsize=12)
 plt.legend(title='Xenon',frameon=True, fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
-
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_fluct2D_"+wd_func+".pdf",
-            dpi=600, bbox_inches="tight")
+if save == True:
+    plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_fluct2D_"+wd_func+".pdf",
+                dpi=600, bbox_inches="tight")
 
 plt.show()
 
@@ -305,26 +308,37 @@ plt.grid(axis='y', which='both', alpha=0.25)
 plt.legend(title='Xenon',frameon=True, fontsize=11, loc='lower right', framealpha=0.9)
 
 plt.tight_layout()
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".npy", Q_cum[m4] * 5.9/to_kev)
+if save == True:
+    np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".npy", Q_cum[m4] * 5.9/to_kev)
 
-plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+    plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
 plt.show()
 
 if wfplot==True:
+    c3 = m4 & (np.argmax(wf, axis=1) >= 2000)
+    for g in range(len(wf[c3])):
+        t = np.linspace(0, 5000, 5000)
+        plt.plot(t, wf[c3][g])
+        plt.text(30, 0.8*np.max(wf[c3][g]), f'Q_cum = {Q_cum[c3][g]*5.9/to_kev:.2f} keV', fontsize=12, color='red')
+        plt.xlabel('Time ($timebins)', fontsize=15)
+        plt.ylabel('amplitude (pes)', fontsize=15)
+        plt.xlim(0, 5000)
+        plt.show()
+
     size_plot = 8
     row = 1
     col = 2
     fig, axes = plt.subplots(row, col, figsize=(size_plot * col ,size_plot * row), constrained_layout=True)
     axes = axes.flatten()
-
+    
     mask_ene = ((Q_cum * 5.9/to_kev) >= 1.3) & ((Q_cum * 5.9/to_kev) <= 1.6)
-    t = np.linspace(0, 40, 5000)
+    
 
-    print('len wf is :', len(wf))
-
-    c3 = m4 & mask_ene
+    print('len wf is :', len(wf), 'len() Q_cum is :', len(Q_cum))
+    c3 = (np.argmax(wf, axis=1) >= 2000) 
     wfplot3 = wf[c3][:50000]
     t_broadcast = np.broadcast_to(t[:, np.newaxis], wfplot3.T.shape)
+    
     axes[1].hist2d(t_broadcast.flatten(), wfplot3.T.flatten(), bins=[200, 200], cmap='viridis', norm=LogNorm())
 
     axes[1].set_xlabel("Time ($\mu$s)", fontsize = 25)

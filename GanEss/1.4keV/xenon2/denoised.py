@@ -76,7 +76,7 @@ sigma_noise_baseline = []
 Q_cons = []
 
 
-def threshold_cross(y, threshold, min_distance=100):
+def threshold_cross(y, threshold, min_distance=50):
     y = np.asarray(y)
     diff = y - threshold
     crossings = np.where(np.diff(np.sign(diff)) != 0)[0]
@@ -203,7 +203,7 @@ for run in run_nb:
                         #We test the efficiency to reduce noise
                         sigma_noise_baseline.append(np.mean(denoised[baseline]))
                         thesh_cross = threshold_cross(denoised, threshold)
-                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000) & (thesh_cross == 2):
+                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000): #& (thesh_cross == 2):
                             #time_charge = (t>=np.argmax(denoised) - 350) & (t<=np.argmax(denoised) + 2125)
                             time_charge = (t>=1000) & (t<=4000)
 
