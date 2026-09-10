@@ -74,6 +74,9 @@ crossings = []
 sigma_noise = []
 sigma_noise_baseline = []
 Q_cons = []
+Q_raw_tot = []
+
+Q_den_tot = []
 
 
 def threshold_cross(y, threshold, min_distance=50):
@@ -172,16 +175,16 @@ for run in run_nb:
                         
                         #We save WF that pass cuts
                         WF_save.append(pmt_rwf_bs)
-
                         denoised = []
-                        
+                        Q_raw_tot.append(np.sum(pmt_rwf_bs))
+
                         #We use a wavelet decomposition to reduce noise
                         signal = np.array(pmt_rwf_bs)
                         coeffs = pywt.wavedec(signal, wd_func+'4', level=4) #multi-scale wavelet decomposition. The list of coeffs is [cA4, cD4, cD3, cD2, cD1]
                         
-                        cD1 = coeffs[-1]
+                        #cD1 = coeffs[-1]
 
-                        sigma_noise.append(np.median(np.abs(cD1))/0.6745)
+                        #sigma_noise.append(np.median(np.abs(cD1))/0.6745)
 
                         threshold = np.mean(pmt_rwf_bs[baseline]) + 3 * np.std(pmt_rwf_bs[baseline]) #
 
@@ -196,12 +199,12 @@ for run in run_nb:
 
                         # We reconstruct the signal with the filtered coeff
                         denoised = pywt.waverec(coeffs_filtered, wd_func+'4')
-
+                        Q_den_tot.append(np.sum(denoised))
                         # We test the charge conservation
-                        Q_cons.append(np.abs(np.sum(denoised) - np.sum(pmt_rwf_bs))/np.sum(pmt_rwf_bs))
+                        #Q_cons.append(np.abs(np.sum(denoised) - np.sum(pmt_rwf_bs))/np.sum(pmt_rwf_bs))
 
                         #We test the efficiency to reduce noise
-                        sigma_noise_baseline.append(np.mean(denoised[baseline]))
+                        #sigma_noise_baseline.append(np.mean(denoised[baseline]))
                         thesh_cross = threshold_cross(denoised, threshold)
                         if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000): #& (thesh_cross == 2):
                             #time_charge = (t>=np.argmax(denoised) - 350) & (t<=np.argmax(denoised) + 2125)
@@ -227,9 +230,22 @@ for run in run_nb:
                             plt.show()
 
 
+# Raw charge before first selection
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_raw_tot_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_raw_tot)
+# Denoised charge before first selection
+np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_den_tot_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_den_tot)
+
+
+# Raw charge after first selection
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", charge)
+# Denoised charge after first selection
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_den_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save)
+# Denoised wf after first selection
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", wf_denoised_save)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_cons_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_cons)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/sigma_noise_bs_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise_baseline)
+
+# sigma noise
+#np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
+# Charge conservations between raw and denoised
+#np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/Q_cons_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_cons)
+# sigma noise baseline
+#np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/sigma_noise_bs_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise_baseline)

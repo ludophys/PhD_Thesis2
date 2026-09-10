@@ -24,7 +24,7 @@ intervals = ['0-200']#, '101-301', '101-201', '202-302']
 
 
 enebins = np.linspace(0, 10000, 200)
-enebinskev = np.linspace(0, 8, 60)
+enebinskev = np.linspace(0, 10, 80)
 timebins = np.linspace(0, 4, 80)
 
 Q_cum = []
@@ -247,7 +247,7 @@ cutmax_fluct = mu2 + 7*sigma2
 cutmin_fluct = mu2 - 7*sigma2
 #plt.axvline(cutmin_fluct, color='red', linestyle='-', linewidth=1.5,
  #           label=r'$\mu - 7\sigma$')
-plt.axvline(cutmax_fluct, color='red', linestyle='--', linewidth=1.5,
+plt.axvline(cutmax_fluct, color='red', linestyle='-', linewidth=1.5,
             label=r'$\mu + 7\sigma$')
 
 
@@ -281,68 +281,215 @@ mask_charge = (fluct >= cutmin_fluct) & (fluct <= cutmax_fluct) & (diff >= mu - 
 Q_tot = len(Q_init_cum)
 print('Number of events : ', Q_tot)
 
-plt.figure(figsize=(7,5))
-#use_charge = [Q_init_cum, Q_cum, Q_cum[m1], Q_cum[m2], Q_cum[m3], Q_cum[m4]]
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+# ============================================================
+# PARAMETRES DU DOUBLE FIT 5.9 / 6.5 keV
+# ============================================================
+
+centers_1 = np.array([5.9, 6.5])
+int_ratio_1 = 1299 / 11142
+
+# ============================================================
+# FONCTIONS DE FIT
+# ============================================================
+
+def double_gaussian_fixed_ratio(x, A1, mu1, sigma1, sigma2, center2, ratio):
+    A2 = A1 * ratio * sigma1 / sigma2
+    g1 = A1 * np.exp(-0.5 * ((x - mu1) / sigma1)**2)
+    g2 = A2 * np.exp(-0.5 * ((x - center2) / sigma2)**2)
+    return g1 + g2
+
+def gaussian_fixed_center(x, A, sigma, center=2.9):
+    return A * np.exp(-0.5 * ((x - center) / sigma)**2)
+
+# ============================================================
+# PREPARATION DU SPECTRE Q_cum[m4]
+# ============================================================
+
+energy_m4 = Q_cum[m4] * 5.9 / to_kev
+energy_m4 = energy_m4[np.isfinite(energy_m4)]
+
+# ============================================================
+# HISTOGRAMME
+# ============================================================
+
+plt.figure(figsize=(7, 7))
 use_charge = [Q_init_cum, Q_cum, Q_cum[m1], Q_cum[m2], Q_cum[m4]]
-use_charge = [Q_init_cum]#, Q_cum, Q_cum[m1], Q_cum[m2], Q_cum[m4]]
 
 for i in range(len(use_charge)):
-    if (i==0):
+    if i == 0:
         label = 'Raw WFs'
-        plt.hist(use_charge[i] * 5.9/to_kev, enebinskev,
-        histtype='step', linewidth=2, color=f'C{i}',
-        label = label)
-    if (i==1):
+    elif i == 1:
         label = 'Denoised WFs'
-        plt.hist(use_charge[i] * 5.9/to_kev, enebinskev,
-        histtype='step', linewidth=2, color=f'C{i}',
-        label = label)
-    if i > 1:
+    else:
         label = f'Cut {i-2} ({100*len(use_charge[i])/Q_tot:.1f}% kept)'
-        plt.hist(use_charge[i] * 5.9/to_kev, enebinskev,
-        histtype='step', linewidth=2, color=f'C{i}',
-        label = label)
+    plt.hist(use_charge[i] * 5.9 / to_kev, enebinskev, histtype='step', linewidth=2, color=f'C{i}', label=label, alpha=0.7)
 
-#plt.axvline(1.49, color='0.3', linestyle='--', linewidth=1.5)
-plt.axvline(4.30, color='0.3', linestyle='--', linewidth=1.5)
-plt.axvline(5.90, color='0.3', linestyle='--', linewidth=1.5)
-plt.axvline(6.49, color='0.3', linestyle='--', linewidth=1.5)
-plt.axvline(1.50, color='0.3', linestyle='--', linewidth=1.5)
+# ============================================================
+# DONNEES DU FIT
+# ============================================================
 
-#plt.text(1.49, 6.5e2, '1.49 keV', rotation=90, fontsize=10,
- #        ha='right', va='center')
-plt.text(4.30, 6.5e2, '4.30 keV', rotation=90, fontsize=10,
-         ha='right', va='center')
-plt.text(5.90, 6.5e2, '5.90 keV', rotation=90, fontsize=10,
-         ha='right', va='center')
-plt.text(6.49, 6.5e2, '6.49 keV', rotation=90, fontsize=10,
-         ha='right', va='center')
-plt.text(1.50, 6.5e2, '1.50 keV', rotation=90, fontsize=10,
-         ha='right', va='center')
+counts, bin_edges = np.histogram(energy_m4, bins=enebinskev)
+bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+
+# ============================================================
+# FIT 1 : DOUBLE GAUSSIENNE 5.9 + 6.5 keV
+# ============================================================
+
+mask_1 = (bin_centers > 5.0) & (bin_centers < 7.2)
+x_fit_1, y_fit_1 = bin_centers[mask_1], counts[mask_1]
+
+p0_1 = [1000, 5.9, 0.15, 0.15]
+bounds_1 = ([0, 5.7, 0.01, 0.01], [np.inf, 6.1, 1.0, 1.0])
+
+popt_1, pcov_1 = curve_fit(
+    lambda x, A1, mu1, sigma1, sigma2:
+        double_gaussian_fixed_ratio(x, A1, mu1, sigma1, sigma2, centers_1[1], int_ratio_1),
+    x_fit_1, y_fit_1, p0=p0_1, bounds=bounds_1, maxfev=50000
+)
+
+A1, mu1, sigma1, sigma2 = popt_1
+A2 = A1 * int_ratio_1 * sigma1 / sigma2
+
+# ============================================================
+# FIT 2 : GAUSSIENNE UNIQUE CENTREE A 1.5 keV
+# ============================================================
+
+center_2 = 1.5
+mask_2 = (bin_centers > 0.5) & (bin_centers < 1.7)
+x_fit_2, y_fit_2 = bin_centers[mask_2], counts[mask_2]
+
+p0_2 = [500, 0.15]
+bounds_2 = ([0, 0.01], [np.inf, 1.0])
+
+popt_2, pcov_2 = curve_fit(
+    lambda x, A, sigma: gaussian_fixed_center(x, A, sigma, center_2),
+    x_fit_2, y_fit_2, p0=p0_2, bounds=bounds_2, maxfev=50000
+)
+
+A3, sigma3 = popt_2
+
+# ============================================================
+# FIT 3 : GAUSSIENNE UNIQUE CENTREE A 4.5 keV
+# ============================================================
+
+center_3 = 4.3
+mask_3 = (bin_centers > 3.9) & (bin_centers < 4.5)
+x_fit_3, y_fit_3 = bin_centers[mask_3], counts[mask_3]
+
+p0_3 = [500, 0.15]
+bounds_3 = ([0, 0.01], [np.inf, 1.0])
+
+popt_3, pcov_3 = curve_fit(
+    lambda x, A, sigma: gaussian_fixed_center(x, A, sigma, center_3),
+    x_fit_3, y_fit_3, p0=p0_3, bounds=bounds_3, maxfev=50000
+)
+
+A4, sigma4 = popt_3
+
+# ============================================================
+# COURBES DES FITS
+# ============================================================
+
+x_plot_1 = np.linspace(3, 10, 1000)
+g1 = A1 * np.exp(-0.5 * ((x_plot_1 - mu1) / sigma1)**2)
+g2 = A2 * np.exp(-0.5 * ((x_plot_1 - centers_1[1]) / sigma2)**2)
+g_total_1 = g1 + g2
+
+x_plot_2 = np.linspace(0, 5, 1000)
+g3 = A3 * np.exp(-0.5 * ((x_plot_2 - center_2) / sigma3)**2)
+
+x_plot_3 = np.linspace(2, 8, 1000)
+g4 = A4 * np.exp(-0.5 * ((x_plot_3 - center_3) / sigma4)**2)
+
+plt.plot(x_plot_1, g_total_1, 'k--', linewidth=2.5, label='Double Gaussian 5.9/6.5 keV')
+plt.plot(x_plot_1, g1, '--', color='orange', linewidth=1.5, alpha=0.7)
+plt.plot(x_plot_1, g2, '--', color='green', linewidth=1.5, alpha=0.7)
+plt.plot(x_plot_3, g4, 'm--', linewidth=2.5, label='Gaussian 4.5 keV')
+
+plt.plot(x_plot_2, g3, 'b--', linewidth=2.5, label='Gaussian 1.5 keV')
+
+
+# ============================================================
+# LIGNES DES ENERGIES
+# ============================================================
+
+for energy in [1.50, 4.30, 5.90, 6.49]:
+    plt.axvline(energy, color='0.3', linestyle='--', linewidth=1.2)
+
+plt.text(1.50, 2.5e2, '1.50 keV', rotation=90, fontsize=9, ha='right')
+plt.text(4.30, 2.5e2, '4.30 keV', rotation=90, fontsize=9, ha='right')
+plt.text(5.90, 2.5e2, '5.90 keV', rotation=90, fontsize=9, ha='right')
+plt.text(6.49, 2.5e2, '6.49 keV', rotation=90, fontsize=9, ha='right')
+
+# ============================================================
+# MISE EN FORME
+# ============================================================
 
 plt.xlabel('Energy spectrum (keV)', fontsize=15)
 plt.ylabel('Entries', fontsize=15)
-
 plt.yscale('log')
-
 plt.xticks(fontsize=13)
 plt.yticks(fontsize=13)
-
-plt.tick_params(direction='in', which='both',
-                top=True, right=True,
-                length=6, width=1.2)
-
+plt.tick_params(direction='in', which='both', top=True, right=True, length=6, width=1.2)
 plt.minorticks_on()
-
 plt.grid(axis='y', which='both', alpha=0.25)
-
-plt.legend(title='Xenon',frameon=True, fontsize=11, loc='lower right', framealpha=0.9)
-
+plt.legend(title='Xenon', frameon=True, fontsize=9, loc='lower right', framealpha=0.9)
+plt.ylim(1e1, 1e5)
 plt.tight_layout()
-if save == True:
-    np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_raw_"+wd_func+".npy", Q_cum[m4] * 5.9/to_kev)
 
-    plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_raw_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
+# ============================================================
+# RESULTATS DU DOUBLE FIT 5.9 / 6.5 keV
+# ============================================================
+
+print("====================================================")
+print("DOUBLE GAUSSIAN FIT - 5.9 / 6.5 keV")
+print("====================================================")
+print(f"Centre 1 = {mu1:.4f} keV")
+print(f"Sigma 1  = {sigma1:.4f} keV")
+print(f"FWHM 1   = {2.3548*sigma1:.4f} keV")
+print(f"Centre 2 = {centers_1[1]:.4f} keV (fixé)")
+print(f"Sigma 2  = {sigma2:.4f} keV")
+print(f"FWHM 2   = {2.3548*sigma2:.4f} keV")
+print(f"Amplitude 1 = {A1:.2f}")
+print(f"Amplitude 2 = {A2:.2f}")
+print(f"Ratio intégrales imposé = {int_ratio_1:.6f}")
+print(f"Ratio intégrales réel = {(A2*sigma2)/(A1*sigma1):.6f}")
+
+# ============================================================
+# RESULTATS DU FIT 1.5 keV
+# ============================================================
+
+print("====================================================")
+print("GAUSSIAN FIT - 1.5 keV")
+print("====================================================")
+print(f"Centre = {center_2:.4f} keV (fixé)")
+print(f"Sigma  = {sigma3:.4f} keV")
+print(f"FWHM   = {2.3548*sigma3:.4f} keV")
+print(f"Amplitude = {A3:.2f}")
+
+# ============================================================
+# RESULTATS DU FIT 4.5 keV
+# ============================================================
+
+print("====================================================")
+print("GAUSSIAN FIT - 4.5 keV")
+print("====================================================")
+print(f"Centre = {center_3:.4f} keV (fixé)")
+print(f"Sigma  = {sigma4:.4f} keV")
+print(f"FWHM   = {2.3548*sigma4:.4f} keV")
+print(f"Amplitude = {A4:.2f}")
+
+
+
+
+if save == True:
+    np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".npy", Q_cum[m4] * 5.9/to_kev)
+
+    plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/xenon2/TOT_charge_"+wd_func+".pdf", dpi=300, bbox_inches="tight")
 plt.show()
 
 if wfplot==True:
