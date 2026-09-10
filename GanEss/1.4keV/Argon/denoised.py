@@ -202,7 +202,7 @@ for run in run_nb:
                         sigma_noise_baseline.append(np.mean(denoised[baseline]))
                         thesh_cross = threshold_cross(denoised, threshold)
 
-                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000) & (thesh_cross == 2):
+                        if (np.max(denoised) > threshold) & (np.argmax(denoised) < 4000) & (np.argmax(denoised) > 1000):# & (thesh_cross == 2):
                             #time_charge = (t>=np.argmax(denoised) - 350) & (t<=np.argmax(denoised) + 2125)
                             time_charge = (t>=1000) & (t<=4000)
 
@@ -224,6 +224,6 @@ for run in run_nb:
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", charge)
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_den_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save)
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", wf_denoised_save)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_cons_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_cons)
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_bs_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise_baseline)
+#np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
+#np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_cons_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_cons)
+#np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_bs_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise_baseline)
