@@ -43,7 +43,9 @@ GaP::GaP():
     vessel_rad_        (276./2  *mm),
     vessel_length_     (38.599  *cm), // Adjusted length so that the gas volume is centered. Original length (38.639  *cm),
 
-    mesh_rad_          (104./2  *mm),
+    mesh_rad_          (104./2  *mm), //true value
+
+    //mesh_rad_          (104.  *mm),
     mesh_thickn_       (0.075   *mm),
     mesh_transparency_ (0.95),
 
@@ -113,7 +115,7 @@ void GaP::Construct()
       gas_->SetMaterialPropertiesTable(opticalprops::GXe(pressure_, temperature_, sc_yield_, elifetime_));
       yield_ = XenonELLightYield(el_field_, gas_->GetPressure());
 
-    } 
+    }
     else if (gas_element_ == "Ar") {
       gas_ =  materials::GAr(pressure_, temperature_);
       //gas_ = G4NistManager::Instance()->FindOrBuildMaterial("G4_Ar");
@@ -124,9 +126,9 @@ void GaP::Construct()
       yield_ = ArgonELLightYield(el_field_, gas_->GetPressure());
       //yield_ = 1;
       G4cout << "yield_" << yield_ << G4endl;
-      
+      }
 
-    }
+
     else {
       G4Exception("[NextNewVessel]", "Construct()", FatalException,
 		  "Unknown kind of gas, valid options are: Xe, Ar");
@@ -156,6 +158,9 @@ void GaP::Construct()
     //Aluminium material for the foil on the top of the source
     aluminium_mat_ = G4NistManager::Instance()->FindOrBuildMaterial("G4_Al");
     aluminium_mat_->SetMaterialPropertiesTable(new G4MaterialPropertiesTable());
+
+    argon_mat_ = G4NistManager::Instance()->FindOrBuildMaterial("G4_Ar");
+    argon_mat_->SetMaterialPropertiesTable(new G4MaterialPropertiesTable());
 
     //Plexiglass material for source box
     plexiglass_mat_ = G4NistManager::Instance()->FindOrBuildMaterial("G4_PLEXIGLASS");
@@ -319,13 +324,15 @@ void GaP::DefineConfigurationParameters()
 }
 
 void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4Material* peek, G4Material* vacuum, G4Material* quartz, G4Material* tpb, G4LogicalVolume* logic_vessel_steel)
-{   pmt_.SetSensorDepth(2);
+{   //pmt_.SetSensorDepth(2);
     //// we declare the dimensions at the start because there are some dependencies between geometries
     pmt_.Construct();
+    G4LogicalVolume* logic_pmt = pmt_.GetLogicalVolume();
+
 
     //PMT R11410
 
-    G4double front_diam  = pmt_.FrontBodyDiameter();
+   /*G4double front_diam  = pmt_.FrontBodyDiameter();
     G4double front_len   = pmt_.FrontBodyLength();
 
     G4double rear_diam   = pmt_.RearBodyDiameter();
@@ -339,15 +346,13 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4double pc_diam     = pmt_.PhotocathodeDiameter();
     G4double pc_thick    = pmt_.PhotocathodeThickness();
 
-    G4LogicalVolume* logic_pmt = pmt_.GetLogicalVolume();
-
     //PMT Length as to be calculated 
 
-    G4double pmt_length_ = front_len + rear_len;
+    G4double pmt_length_ = front_len + rear_len;*/
 
     //PMTR7378A
 
-    //G4double pmt_length_ = pmt_.Length(); 
+    G4double pmt_length_ = pmt_.Length(); 
 
     G4double pmt_z  = 42.495*mm + pmt_length_/2;
 
@@ -365,8 +370,11 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4double cath_gate = cathode_z - gate_z - meshBracket_thickn_;
 
     G4double drift_z = cathode_z - (cathode_z - gate_z)/2 + meshBracket_thickn_/2; // Z position of Drift volume placed in the center of the gate and the cathode + meshBracket_thickn_/2 in order to not cover the gate (already covered by EL volume) and fully cover the cathode
+    
+    std::cout << "driftz is : " << drift_z << std::endl;
+    
     G4double drift_length_  = cathode_z - gate_z; // Length of the Drift volume to of 87mm + cathode volume
-
+    std::cout << "drift_length_ is : " << drift_length_ << std::endl;
     G4double el_z = (gate_z + meshBracket_thickn_/2) - ((gate_z + meshBracket_thickn_/2) - (anode_z - anodeBracket_thickn_/2))/2; // Position of the center of the Gate - Anode distance 
     G4double el_length_     = (gate_z + meshBracket_thickn_/2) - (anode_z - anodeBracket_thickn_/2); //Distance between Gate - Anode (both entirely covered by EL volume)
 
@@ -411,6 +419,8 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     //G4double alu_foil_thick_ = 1. * mm;
     G4double alu_foil_z_ = source_box_z_ - source_box_thick_/2 - alu_foil_thick_/2; // Z position of the surface of the source box
     
+    std::cout << "alu_foil_z_ is : " << alu_foil_z_ << std::endl;
+
     G4double rings_rad_int_ = 156*mm;
     G4double rings_rad_ext_ = 166*mm;
     G4double rings_length_ = 9*mm;
@@ -454,6 +464,7 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
 
     //// Drift (contained in GasVessel)
     G4Tubs          *solid_gas_drift = new G4Tubs("GasDrift", 0., meshBracket_rad_, (drift_length_)/2, 0., 360.*deg);
+
     G4LogicalVolume *logic_gas_drift = new G4LogicalVolume(solid_gas_drift, gas, "GasDrift");
     G4VPhysicalVolume* drift_phys_ = new G4PVPlacement(0, G4ThreeVector(0., 0., drift_z), logic_gas_drift, "GasDrift", logic_vessel, false, 0, true);
 
@@ -470,20 +481,25 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     new G4PVPlacement(0, G4ThreeVector(0., 0., cathode_z - drift_z), logic_cathode, "Cathode", logic_gas_drift, false, 0, true);
 
     // Source Box (in "GasDrift" volume)
-    G4Tubs          *solid_sourceBox = new G4Tubs("SourceBox", 0, source_box_rad_/2, (source_box_thick_)/2, 0., 360.*deg);
+    /*G4Tubs          *solid_sourceBox = new G4Tubs("SourceBox", 0, source_box_rad_/2, (source_box_thick_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_sourceBox = new G4LogicalVolume(solid_sourceBox, plexiglass_mat_, "SourceBox");
     new G4PVPlacement(0, G4ThreeVector(0., 0., source_box_z_ - drift_z), logic_sourceBox, "SourceBox", logic_gas_drift, false, 0, true);
-
+*/
     // Vacuum inside Source Box (in "SourceBox" volume)
-    G4Tubs          *solid_vSourceBox = new G4Tubs("VSourceBox", 0, source_box_rad_/2 - 0.5 * mm, (vsource_box_thick_)/2, 0., 360.*deg);
+    /*G4Tubs          *solid_vSourceBox = new G4Tubs("VSourceBox", 0, source_box_rad_/2 - 0.5 * mm, (vsource_box_thick_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_vSourceBox = new G4LogicalVolume(solid_vSourceBox, vacuum, "VSourceBox");
     new G4PVPlacement(0, G4ThreeVector(0., 0., 0), logic_vSourceBox, "VSourceBox", logic_sourceBox, false, 0, true);
-
+*/
+    // Vacuum inside Source Box (in "GasDrift" volume)
+    /*G4Tubs          *solid_vSourceBox = new G4Tubs("VSourceBox", 0, source_box_rad_/2 - 0.5 * mm, (vsource_box_thick_)/2, 0., 360.*deg);
+    G4LogicalVolume *logic_vSourceBox = new G4LogicalVolume(solid_vSourceBox, vacuum, "VSourceBox");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., source_box_z_ - drift_z), logic_vSourceBox, "VSourceBox", logic_gas_drift, false, 0, true);
+*/
     // Aluminium foil on the top of the source box (in "GasDrift" volume)
-    G4Tubs          *solid_aluFoil = new G4Tubs("AluFoil", 0, alu_foil_rad_/2, (alu_foil_thick_)/2, 0., 360.*deg);
+   /*G4Tubs          *solid_aluFoil = new G4Tubs("AluFoil", 0, alu_foil_rad_/2, (alu_foil_thick_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_aluFoil = new G4LogicalVolume(solid_aluFoil, aluminium_mat_, "AluFoil");
     new G4PVPlacement(0, G4ThreeVector(0., 0., alu_foil_z_ - drift_z), logic_aluFoil, "AluFoil", logic_gas_drift, false, 0, true);
-
+*/
     // Light Tube (in GasDrift volume)
     G4Tubs          *solid_light_tube = new G4Tubs("light_tube_ext", lightTube_rad_ , lightTube_rad_ + lightTube_thickn_/2 , lightTube_length_/2, 0, 360*deg);
     G4LogicalVolume *logic_light_tube = new G4LogicalVolume(solid_light_tube, teflon_mat_, "light_tube");
@@ -572,7 +588,6 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4Tubs          *solid_gas_el = new G4Tubs("GasEL", 0., meshBracket_rad_, (el_length_)/2, 0., 360.*deg);
     G4LogicalVolume *logic_gas_el = new G4LogicalVolume(solid_gas_el, gas, "GasEL");
     G4VPhysicalVolume* el_phys_ = new G4PVPlacement(0, G4ThreeVector(0., 0., el_z), logic_gas_el, "GasEL", logic_vessel, false, 0, true);
-    
     el_gen_  = new CylinderPointSampler2020(el_phys_);
     
     //// Gate
@@ -622,12 +637,12 @@ void GaP::BuildTPC(G4Material* gas, G4Material* mesh_mat, G4Material* steel, G4M
     G4Tubs *solid_pmt = new G4Tubs("SolidPMT", 0., pmt_rad_, pmt_length_/2, 0., 360.*deg); // Hamamatsu pmt length: 43*mm | STEP pmt gap length: 57.5*mm
 
     // Position pairs (x,Y) for PMTs for PMTR7378A
-    //std::vector <float> pmt_PsX={-15.573, 20.68, -36.253, 0., 36.253, -20.68, 15.573};
-    //std::vector <float> pmt_PsY={-32.871, -29.922, -2.949, 0., 2.949, 29.922, 32.871};
+    std::vector <float> pmt_PsX={-15.573, 20.68, -36.253, 0., 36.253, -20.68, 15.573};
+    std::vector <float> pmt_PsY={-32.871, -29.922, -2.949, 0., 2.949, 29.922, 32.871};
 
     // Position pairs (x,Y) for PMTs for PMTR11410
-    std::vector <float> pmt_PsX={0.};
-    std::vector <float> pmt_PsY={0.};
+    /*std::vector <float> pmt_PsX={0.};
+    std::vector <float> pmt_PsY={0.};*/
 
     /// Evaporated TPB
     G4Tubs          *solid_tpb_coating = new G4Tubs("CoatingTPB", 0, pmt_rad_ , tpb_coating_thickn_/2, 0, 360*deg);
