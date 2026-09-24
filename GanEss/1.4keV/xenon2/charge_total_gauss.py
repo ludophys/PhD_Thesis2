@@ -17,7 +17,7 @@ from matplotlib.colors import LogNorm
 #Reading of input param from source code noise_analysis.sh
 import sys
 
-run_nb = ['2661', '2662', '2663', '2664']
+run_nb = ['2661']#, '2662', '2663', '2664']
 intervals = ['0-200']#, '101-301', '101-201', '202-302']
 
 #Definition of binnings for histo
@@ -39,9 +39,9 @@ Q_den_tot = []
 single_pulse_charges = []
 wd_func = 'coif'
 
-wfplot = False
-save = True
-folder = 'data_08-09'
+wfplot = True
+save = False
+folder = 'data_17-09'
 
 for i in range(len(run_nb)):
     for j in range(len(intervals)):
@@ -86,7 +86,7 @@ wf = np.array(wf)
 print('len wf at start is :', wf)
 Q_init_cum = np.array(Q_init_cum)
 Q_cum = np.array(Q_cum)
-mask_to_kev = (Q_cum>=2000)
+mask_to_kev = (Q_cum>=1500)
 counts, bins, __ = plt.hist(Q_cum[mask_to_kev], bins=enebins)
 plt.show()
 bin_centers = (bins[:-1] + bins[1:]) / 2
@@ -271,8 +271,13 @@ if save == True:
 
 plt.show()
 
-m1 = (fluct >= cutmin_fluct)
-m2 = m1 & (fluct <= cutmax_fluct)
+#m1 = (fluct >= cutmin_fluct)
+#m2 = m1 & (fluct <= cutmax_fluct)
+#m3 = m2 & (diff >= mu - 3*sigma)
+#m4 = m3 & (diff <= mu + 3*sigma)
+
+#m1 = (fluct >= cutmin_fluct)
+m2 = (fluct <= cutmax_fluct)
 m3 = m2 & (diff >= mu - 3*sigma)
 m4 = m3 & (diff <= mu + 3*sigma)
 
@@ -317,7 +322,7 @@ energy_m4 = energy_m4[np.isfinite(energy_m4)]
 # ============================================================
 
 plt.figure(figsize=(7, 7))
-use_charge = [Q_init_cum, Q_cum, Q_cum[m1], Q_cum[m2], Q_cum[m4]]
+use_charge = [Q_init_cum, Q_cum, Q_cum[m2], Q_cum[m3], Q_cum[m4]]
 
 for i in range(len(use_charge)):
     if i == 0:
@@ -499,14 +504,14 @@ if wfplot==True:
     fig, axes = plt.subplots(row, col, figsize=(size_plot * col ,size_plot * row), constrained_layout=True)
     axes = axes.flatten()
 
-    #mask_ene = ((Q_cum * 5.9/to_kev) >= 1.3) & ((Q_cum * 5.9/to_kev) <= 1.6)
-    mask_ene = ((single_pulse_charges* 5.9/to_kev) >= 1.3) & ((single_pulse_charges* 5.9/to_kev) <= 1.6)
+    mask_ene = ((Q_cum * 5.9/to_kev) >= 1.3) & ((Q_cum * 5.9/to_kev) <= 1.6)
+    #mask_ene = ((single_pulse_charges* 5.9/to_kev) >= 1.3) & ((single_pulse_charges* 5.9/to_kev) <= 1.6)
     t = np.linspace(0, 40, 5000)
 
     print('len wf is :', len(wf))
 
-    #c3 = m4 & mask_ene
-    c3 = mask_ene
+    c3 = m4 & mask_ene
+    #c3 = mask_ene
     wfplot3 = wf[c3][:50000]
     t_broadcast = np.broadcast_to(t[:, np.newaxis], wfplot3.T.shape)
     axes[1].hist2d(t_broadcast.flatten(), wfplot3.T.flatten(), bins=[200, 200], cmap='viridis', norm=LogNorm())

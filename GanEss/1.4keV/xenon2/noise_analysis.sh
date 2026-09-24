@@ -1,5 +1,6 @@
 #!/bin/bash
-run_array=("2661" "2662" "2663" "2664")
+#run_array=("2661" "2662" "2663" "2664")
+run_array=("2661")
 
 for run_nb in "${run_array[@]}"; do
     

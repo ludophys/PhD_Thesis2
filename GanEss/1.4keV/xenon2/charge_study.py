@@ -41,7 +41,7 @@ timebins = np.linspace(0, 6, 50)
 
 #Find the 5.9 keV peak and do the conversion from ADC counts to keV
 
-mask_to_kev = (charge>=2000)
+mask_to_kev = (charge>=1500)
 counts, bins, __ = plt.hist(charge[mask_to_kev], bins=enebins)
 bin_centers = (bins[:-1] + bins[1:]) / 2
 

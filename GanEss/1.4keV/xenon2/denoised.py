@@ -30,7 +30,7 @@ nf = int(sys.argv[5])
 
 
 import gres.database.load_db as db
-data_pmt = db.DataPMT('gap', 5000)
+data_pmt = db.DataPMT('gap', 2921)
 print(data_pmt['adc_to_pes'])
 
 calib = np.array(data_pmt['adc_to_pes'].to_list())
