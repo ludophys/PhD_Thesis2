@@ -30,7 +30,7 @@ nf = int(sys.argv[5])
 
 
 import gres.database.load_db as db
-data_pmt = db.DataPMT('gap', 5000)
+data_pmt = db.DataPMT('gap', 3305)
 print(data_pmt['adc_to_pes'])
 
 calib = np.array(data_pmt['adc_to_pes'].to_list())
@@ -39,7 +39,7 @@ nbr_evpr = 1000
 t = np.linspace(0, 5000, 5000) #5000 bins of 8ns = 40ms
 
 # True for plotting few wfs
-plot = False
+plot = True
 
 #run_nb = [2661] #xenon
 print(sys.argv[0])
@@ -213,12 +213,19 @@ for run in run_nb:
                             charge.append(np.sum(pmt_rwf_bs))
                             #charge.append(np.sum(denoised))
                         cpt_plot += 1
-                        if (plot == True) & (0<=cpt_plot<=3):
-
-                            plt.plot(t, pmt_rwf_bs)
+                        if (plot == True) & (0<=cpt_plot<=100):
+                            plt.style.use('default')
+                            plt.style.use("seaborn-colorblind")
+                            plt.tick_params(direction='in', which='both', top=True, right=True, length=6, width=1.2)
+                            plt.minorticks_on()
+                            #plt.grid(axis='y', which='both', alpha=0.25)
+                            plt.plot(t, pmt_rwf_bs, label='Raw Waveform', color='C1')
+                            plt.plot(t, denoised, label='Denoised Waveform', color='C2')
                             #plt.axhline(np.mean(pmt_rwf_bs[baseline]) + 3 * np.std(pmt_rwf_bs[baseline]), color='red')
                             plt.xlabel("Timebin (8ns)")
                             plt.ylabel("Charge (pes)")
+                            plt.legend()
+                            plt.savefig("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/Paper1/WF_WD.pdf", bbox_inches='tight')
                             plt.show()
 
 np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", charge)

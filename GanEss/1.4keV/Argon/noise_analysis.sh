@@ -1,6 +1,6 @@
 #!/bin/bash
+#run_array=("3135" "3136" "3137" "3138")
 run_array=("3131" "3132" "3133" "3134")
-
 for run_nb in "${run_array[@]}"; do
 
 gas="Ar"
