@@ -14,13 +14,15 @@ wd_func = str(sys.argv[3])
 gas = str(sys.argv[4])
 nf = int(sys.argv[5])
 main_path = str(sys.argv[6])
+dec_level = int(sys.argv[7])
 
 from datetime import date
 date_today = date.today().strftime("%Y-%m-%d")
 
 event_max = event_min + nf
+post_path = str(gas)+"_"+str(run_nb[0])+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+str(dec_level)+".npy"
 
-wf = np.loadtxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+wf = np.loadtxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+post_path)
 print('wf loaded')
 
 WF_save = np.array(wf)
@@ -32,4 +34,4 @@ for i in range(len(WF_save)):
 
     fluct.append(np.var(np.diff(cumsum_ratio)))
 
-np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/fluct_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", fluct)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/fluct_"+post_path, fluct)

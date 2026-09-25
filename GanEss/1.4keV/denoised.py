@@ -22,6 +22,7 @@ wd_func = str(sys.argv[3])
 gas = str(sys.argv[4])
 nf = int(sys.argv[5])
 main_path = str(sys.argv[6])
+dec_level = int(sys.argv[7])
 
 date_today = date.today().strftime("%Y-%m-%d")
 
@@ -86,7 +87,7 @@ for run in run_nb:
     #for i in range(0, 50):
 
         wf_file = str(files[i])
-        print(f'file number : {i*100/(event_max-event_min)}%')
+        print(f'process : {i*100/(event_max-event_min)}%')
         #print(wf_file)
 
         with tb.open_file(wf_file, 'r') as h5in:
@@ -184,7 +185,7 @@ for run in run_nb:
 
                         signal = np.array(pmt_rwf_bs)
 
-                        coeffs = pywt.wavedec(signal, wd_func + '4', level=4)
+                        coeffs = pywt.wavedec(signal, wd_func, level=dec_level)
 
                         cD1 = coeffs[-1]
 
@@ -229,7 +230,7 @@ for run in run_nb:
                             coeffs_filtered.append(filtered)
 
                         # We reconstruct the signal with the filtered coeff
-                        denoised = pywt.waverec(coeffs_filtered, wd_func+'4')
+                        denoised = pywt.waverec(coeffs_filtered, wd_func)
                        
                         # We test the charge conservation
                         Q_cons.append(np.abs(np.sum(denoised) - np.sum(pmt_rwf_bs))/np.sum(pmt_rwf_bs))
@@ -248,8 +249,8 @@ for run in run_nb:
                             wf_denoised_save.append(denoised)
                             denoised_save.append(np.sum(denoised))
                             
-                            #charge.append(np.sum(pmt_rwf_bs))
-                            #charge.append(np.sum(denoised))
+                            charge.append(np.sum(pmt_rwf_bs))
+                            charge.append(np.sum(denoised))
                         cpt_plot += 1
 
                         if (plot == True) & (0<=cpt_plot<=100):
@@ -269,10 +270,13 @@ for run in run_nb:
 
 import os
 os.makedirs(main_path+"/"+str(gas)+"/data_"+str(date_today), exist_ok=True)
+post_path = str(gas)+"_"+str(run_nb[0])+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+str(dec_level)+".npy"
 
-#np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", charge)
-np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/Q_den_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", denoised_save)
-np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", wf_denoised_save)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/Q_"+post_path, charge)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/Q_den_"+post_path, denoised_save)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+post_path, wf_denoised_save)
+
+
 #np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
 #np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_cons_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_cons)
 #np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_bs_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise_baseline)

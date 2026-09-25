@@ -16,13 +16,16 @@ wd_func = str(sys.argv[3])
 gas = str(sys.argv[4])
 nf = int(sys.argv[5])
 main_path = str(sys.argv[6])
+dec_level = int(sys.argv[7])
 
 event_max = event_min + nf
 
 from datetime import date
 date_today = date.today().strftime("%Y-%m-%d")
 
-wf = np.loadtxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+post_path = str(gas)+"_"+str(run_nb[0])+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+str(dec_level)+".npy"
+
+wf = np.loadtxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+post_path)
 
 print('wf loaded')
 t = np.linspace(0, 5000, 5000)
@@ -60,7 +63,7 @@ for i in range(len(WF_save)):
     
         plt.show()
 
-np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/t03_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", t03)
-np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/t07_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", t07)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/t03_"+post_path, t03)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/t07_"+post_path, t07)
 
 
