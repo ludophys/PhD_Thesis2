@@ -1,25 +1,26 @@
-import pandas as pd
+# here we calculate the variable fluct that calculate how smooth the ratio curve is
 
-import tables as tb
-from scipy.integrate import trapz
-from scipy.optimize import curve_fit
-from scipy.special import erfc
+print('We are in fluct_study.py')
+import pandas as pd
 import glob
 import pywt
-from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import UnivariateSpline
-from matplotlib.colors import LogNorm
-
 import sys
 
 run_nb = [sys.argv[1]]
 event_min = int(sys.argv[2])
-event_max = event_min + 100
 wd_func = str(sys.argv[3])
+gas = str(sys.argv[4])
+nf = int(sys.argv[5])
+main_path = str(sys.argv[6])
 
-wf = np.loadtxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/wf_Ar_db_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
+from datetime import date
+date_today = date.today().strftime("%Y-%m-%d")
+
+event_max = event_min + nf
+
+wf = np.loadtxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy")
 print('wf loaded')
 
 WF_save = np.array(wf)
@@ -31,4 +32,4 @@ for i in range(len(WF_save)):
 
     fluct.append(np.var(np.diff(cumsum_ratio)))
 
-np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/fluct_Ar_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", fluct)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/fluct_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", fluct)
