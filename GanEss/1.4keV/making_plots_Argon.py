@@ -17,7 +17,7 @@ from matplotlib.colors import LogNorm
 #Reading of input param from source code noise_analysis.sh
 import sys
 
-run_nb = [sys.argv[1]]
+run_nb = [int(x) for x in sys.argv[1].split(",")]
 event_min = int(sys.argv[2])
 wd_func = str(sys.argv[3])
 gas = str(sys.argv[4])
@@ -47,7 +47,7 @@ Q_den_tot = []
 
 wfplot = False
 save = False
-folder = 'data_2026-09-25'
+folder = 'data_2026-09-28'
 event_max = event_min + nf
 
 for i in range(len(run_nb)):

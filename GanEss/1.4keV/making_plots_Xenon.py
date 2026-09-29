@@ -12,7 +12,7 @@ from matplotlib.colors import LogNorm
 #Reading of input param from source code noise_analysis.sh
 import sys
 
-run_nb = [sys.argv[1]]
+run_nb = [int(x) for x in sys.argv[1].split(",")]
 event_min = int(sys.argv[2])
 wd_func = str(sys.argv[3])
 gas = str(sys.argv[4])
@@ -23,7 +23,7 @@ dec_level = int(sys.argv[7])
 intervals = [str(event_min)+"-"+str(event_min+nf)]#
 
 #Definition of binnings for histo
-
+#run_nb = [2662, 2663, 2664]
 
 enebins = np.linspace(0, 10000, 200)
 enebinskev = np.linspace(0, 10, 80)
@@ -42,10 +42,10 @@ Q_den_tot = []
 
 wfplot = False
 save = False
-folder = 'data_2026-09-25'
+folder = 'data_2026-09-28'
 event_max = event_min + nf
 
-
+print('len run nb:', run_nb)
 for i in range(len(run_nb)):
     for j in range(len(intervals)):
         #try:

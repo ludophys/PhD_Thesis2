@@ -1,6 +1,6 @@
-### In this script, we denoise wf and we store integral and signal
+### In this script, we denoise wf and we store integral and signal + fluct + time generation
 
-print('We are in denoised.py')
+print('We are in full_analysis.py')
 #1.4keV focus
 import pandas as pd
 import tables as tb
@@ -274,8 +274,59 @@ post_path = str(gas)+"_"+str(run_nb[0])+"_evts_["+str(event_min)+"-"+str(event_m
 
 np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/Q_"+post_path, charge)
 np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/Q_den_"+post_path, denoised_save)
-np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+post_path, wf_denoised_save)
+#np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+post_path, wf_denoised_save)
 
+
+# Fluct
+
+WF_save = np.array(wf_denoised_save)
+fluct = []
+
+for i in range(len(WF_save)):
+    print('process : ', i/len(WF_save) * 100, '%')
+    cumsum_ratio = np.cumsum(WF_save[i])/np.sum(WF_save[i])
+
+    fluct.append(np.var(np.diff(cumsum_ratio)))
+
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/fluct_"+post_path, fluct)
+
+#Time generation
+
+t = np.linspace(0, 5000, 5000)
+
+t03 = []
+t07 = []
+cpt=0
+plot = False
+
+for i in range(len(WF_save)):
+    print('process : ', i/len(WF_save) * 100, '%')
+    cumsum_ratio = np.cumsum(WF_save[i])/np.sum(WF_save[i])
+    t03.append(t[np.searchsorted(cumsum_ratio, 0.3)])
+    t07.append(t[np.searchsorted(cumsum_ratio, 0.7)])
+    #cpt+=1
+
+    #fig, ax1 = plt.subplots()
+
+    if (cpt < 20) & (plot==True):
+        
+        ax1.plot(t, WF_save[i], label='WF')
+        ax1.set_ylabel("Charge (pes)")
+        ax1.tick_params(axis='y')
+        ax1.axvline(t[np.searchsorted(cumsum_ratio, 0.3)], color='red', linestyle='--', label='t03')
+        ax1.axvline(t[np.searchsorted(cumsum_ratio, 0.7)], color='forestgreen', linestyle='--', label='t07')
+        ax1.set_xlabel("Timebin 8ns")
+        ax1.legend()
+        
+        ax2 = ax1.twinx()
+        ax2.plot(t, cumsum_ratio, color='orange')
+        ax2.set_ylabel("CumSum ratio", color='orange')
+        ax2.tick_params(axis='y', labelcolor='orange')
+    
+        plt.show()
+
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/t03_"+post_path, t03)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/t07_"+post_path, t07)
 
 #np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/sigma_noise_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", sigma_noise)
 #np.savetxt("/Users/ldonneger/Desktop/PhD_Thesis2/GanEss/1.4keV/Argon/Q_cons_"+str(gas)+"_"+str(run_nb)+"_evts_["+str(event_min)+"-"+str(event_max)+"]_"+wd_func+".npy", Q_cons)
