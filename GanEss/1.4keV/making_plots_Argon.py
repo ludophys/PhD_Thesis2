@@ -46,8 +46,8 @@ Q_den_tot = []
 
 
 wfplot = False
-save = False
-folder = 'data_2026-09-28'
+save = True
+folder = 'data_2026-09-30'
 event_max = event_min + nf
 
 for i in range(len(run_nb)):
@@ -419,7 +419,7 @@ plt.tick_params(direction='in', which='both', top=True, right=True, length=6, wi
 plt.minorticks_on()
 plt.grid(axis='y', which='both', alpha=0.25)
 plt.legend(title=str(gas), frameon=True, fontsize=9, loc='lower right', framealpha=0.9)
-plt.ylim(1e1, 1e5)
+plt.ylim(1e1, 3e5)
 plt.tight_layout()
 
 # ============================================================

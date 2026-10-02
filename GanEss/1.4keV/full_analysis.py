@@ -36,7 +36,7 @@ nbr_evpr = 1000
 t = np.linspace(0, 5000, 5000) #5000 bins of 8ns = 40ms
 
 # True for plotting few wfs
-plot = False
+plot = True
 
 print(sys.argv[0])
 
@@ -274,6 +274,10 @@ post_path = str(gas)+"_"+str(run_nb[0])+"_evts_["+str(event_min)+"-"+str(event_m
 
 np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/Q_"+post_path, charge)
 np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/Q_den_"+post_path, denoised_save)
+
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/Q_cons_"+post_path, Q_cons)
+np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/sigma_noise_bs_"+post_path, sigma_noise_baseline)
+
 #np.savetxt(main_path+"/"+str(gas)+"/data_"+str(date_today)+"/wf_"+post_path, wf_denoised_save)
 
 
