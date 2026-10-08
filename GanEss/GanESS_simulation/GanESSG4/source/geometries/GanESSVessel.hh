@@ -39,8 +39,9 @@ namespace nexus {
 
   private:
     // Dimensions
-    const G4double vessel_in_rad_, vessel_thickness_;
-    const G4double body_length_;
+    const G4double vessel_length_, vessel_in_rad_, vessel_out_rad_;
+    const G4double flange_length_, flange_in_rad_, flange_out_rad_, flange_z_pos_;
+    const G4double cover_flange_length_, cover_flange_in_rad_, cover_flange_out_rad_, cover_flange_z_pos_;
 
     // Gas properties
     G4String gas_;

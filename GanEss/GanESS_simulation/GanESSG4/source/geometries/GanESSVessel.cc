@@ -22,6 +22,8 @@
 #include <G4VisAttributes.hh>
 #include <G4UnionSolid.hh>
 #include <G4Tubs.hh>
+#include <G4Box.hh>
+#include <G4Trap.hh>
 #include <G4Sphere.hh>
 #include <G4NistManager.hh>
 #include <G4Material.hh>
@@ -42,11 +44,23 @@ using namespace nexus;
     GeometryBase(),
 
     // General vessel dimensions
-    vessel_in_rad_    (68.0  * cm),
-    vessel_thickness_ (1.  * cm),
+    vessel_length_     (850./2. * mm), // real length
+    vessel_in_rad_     (640./2. * mm),
+    vessel_out_rad_    (664./2. * mm),
 
-    // Body
-    body_length_ (198.6 * cm),
+    // Flange dimensions
+    flange_length_     (50./2. * mm),
+    flange_in_rad_     (640./2. * mm),
+    flange_out_rad_    (820./2. * mm),
+    flange_z_pos_      (vessel_length_ + flange_length_),
+
+    // Cover Flange dimensions
+    cover_flange_length_ (50./2. * mm),
+    cover_flange_in_rad_(560./2. * mm),
+    cover_flange_out_rad_(820./2. * mm),
+    cover_flange_z_pos_  (flange_z_pos_ + flange_length_ + cover_flange_length_),
+    //cover_flange_z_pos_  (2000 * mm),
+
 
     // Gas properties
     gas_("naturalXe"),
@@ -75,16 +89,56 @@ using namespace nexus;
 }
   void GanESSVessel::Construct()
   {
+
     // Body solid
-    G4double vessel_out_rad = vessel_in_rad_ + vessel_thickness_;
-    G4Tubs* vessel_body_solid =
-      new G4Tubs("VESSEL_BODY", 0., vessel_out_rad, body_length_/2., 0.*deg, 360.*deg);
+    G4Tubs* vessel_body_solid = new G4Tubs("VESSEL_BODY", 0., vessel_out_rad_, vessel_length_, 0.*deg, 360.*deg);
 
-    G4LogicalVolume* vessel_logic = new G4LogicalVolume(vessel_body_solid, materials::Steel316Ti(), "VESSEL");
+    // Flanges
+    G4Tubs* vessel_flange1_solid = new G4Tubs("VESSEL_FLANGE1", flange_in_rad_, flange_out_rad_, flange_length_, 0.*deg, 360.*deg);
+    G4UnionSolid* vessel_union1_ = new G4UnionSolid("BODY_FLANGE1", vessel_body_solid, vessel_flange1_solid, nullptr, G4ThreeVector(0., 0., flange_z_pos_));
+    
+    G4Tubs* vessel_flange2_solid = new G4Tubs("VESSEL_FLANGE2", flange_in_rad_, flange_out_rad_, flange_length_, 0.*deg, 360.*deg);
+    G4UnionSolid* vessel_union2_ = new G4UnionSolid("BODY_FLANGE2", vessel_union1_, vessel_flange2_solid, nullptr, G4ThreeVector(0., 0., -flange_z_pos_));
+
+    // Cover Flanges
+    G4Tubs* cover_flange1_solid = new G4Tubs("COVER_FLANGE1", 0., cover_flange_out_rad_, cover_flange_length_, 0.*deg, 360.*deg);
+    G4UnionSolid* vessel_union3_ = new G4UnionSolid("BODY_COVER_FLANGE1", vessel_union2_, cover_flange1_solid, nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_));
+       
+    G4Tubs* cover_flange2_solid = new G4Tubs("COVER_FLANGE2", cover_flange_in_rad_, cover_flange_out_rad_, cover_flange_length_, 0.*deg, 360.*deg);
+
+    // Holes in the cover flange2
+    const G4int n_trap = 6;
+
+    G4double rotateX[] = {0., 60., 120., 180., 180.+60., 180.+120.};
+    G4double rotateY[] = {-90., -30., 30., 90., 180.-30., 180.+30.};
+
+    G4double coordX[] = {302.5, 151.25, -151.25, -302.5, -151.25, 151.25};
+    G4double coordY[] = {0., 261.973, 261.973, 0., -261.973, -261.973};
+
+    const G4double d = 48.87/2.;
+
+    G4VSolid* cover_flange2_final = cover_flange2_solid;
+
+    for (G4int i = 0; i < n_trap; i++) {
+        G4String name = "TRAP_COVER_FLANGE" + std::to_string(i);
+        G4Trap* trap = new G4Trap(name, 40.5/2.*mm, 0.*deg, 0.*deg, cover_flange_length_, 118.476/2.*mm, 118.476/2.*mm, 0.*deg, cover_flange_length_, 63.764/2.*mm, 63.764/2.*mm, 0.*deg);
+        G4RotationMatrix* rotation = new G4RotationMatrix();
+        rotation->rotateX(90.*deg);
+        rotation->rotateY(rotateY[i]*deg);
+        G4double x = coordX[i] - d*std::cos(rotateX[i]*deg);
+        G4double y = coordY[i] - d*std::sin(rotateX[i]*deg);
+        G4ThreeVector position(x*mm, y*mm, 0.);
+        cover_flange2_final = new G4SubtractionSolid("COVER_FLANGE2_SUB_" + std::to_string(i), cover_flange2_final, trap, rotation, position);
+    }
+
+    G4UnionSolid* vessel_union4_ = new G4UnionSolid("BODY_COVER_FLANGE2", vessel_union3_, cover_flange2_final, nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_));
+
+    // Logical volume
+    G4LogicalVolume* vessel_logic = new G4LogicalVolume(vessel_union4_, materials::Steel316Ti(),"VESSEL");
     this->SetLogicalVolume(vessel_logic); // Mother volume
-
-    // Gas volume
-    G4Tubs* vessel_gas_body_solid = new G4Tubs("VESSEL_GAS_BODY", 0., vessel_in_rad_, body_length_/2., 0.*deg, 360.*deg);
+    
+    // Gas volume inside vessel mother volume
+    G4Tubs* vessel_gas_body_solid = new G4Tubs("VESSEL_GAS_BODY", 0., vessel_in_rad_, vessel_length_, 0.*deg, 360.*deg);
 
     G4Material* vessel_gas_mat = nullptr;
     if (gas_ == "naturalXe") {
@@ -92,17 +146,15 @@ using namespace nexus;
     }
 
     G4LogicalVolume* vessel_gas_logic = new G4LogicalVolume(vessel_gas_body_solid, vessel_gas_mat, "VESSEL_GAS");
+    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), vessel_gas_logic, "VESSEL_GAS", vessel_logic, false, 0, true);
     
     /// Set the gas volume as an ionization sensitive detector
     IonizationSD* ionisd = new IonizationSD("/GanESS/ACTIVE");
     vessel_gas_logic->SetSensitiveDetector(ionisd);
     G4SDManager::GetSDMpointer()->AddNewDetector(ionisd);
 
-    // Placed in the vessel mother volume
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), vessel_gas_logic, "VESSEL_GAS", vessel_logic, false, 0, false);
-
     // Vertex generator in Vessel
-    body_gen_  = new CylinderPointSampler(vessel_in_rad_, vessel_out_rad, body_length_/2.,0., 360.*deg, 0, G4ThreeVector(0., 0., 0.));
+    body_gen_  = new CylinderPointSampler(vessel_in_rad_, vessel_out_rad_, vessel_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., 0.));
   }
 
     GanESSVessel::~GanESSVessel()
