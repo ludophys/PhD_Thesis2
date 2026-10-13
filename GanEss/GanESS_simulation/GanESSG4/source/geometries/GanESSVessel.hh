@@ -41,7 +41,13 @@ namespace nexus {
     // Dimensions
     const G4double vessel_length_, vessel_in_rad_, vessel_out_rad_;
     const G4double flange_length_, flange_in_rad_, flange_out_rad_, flange_z_pos_;
-    const G4double cover_flange_length_, cover_flange_in_rad_, cover_flange_out_rad_, cover_flange_z_pos_;
+    const G4double cover_flange_length_, cover_flange1_in_rad_, cover_flange2_in_rad_, cover_flange_out_rad_, cover_flange_z_pos_;
+    const G4double cover_flange1_inner_in_rad_, cover_flange1_inner_length_, cover_flange1_inner_tubs_z_pos_;
+    const G4double cover_flange1_inner_x_, cover_flange1_inner_y_, cover_flange1_inner_z_, cover_flange1_inner_box_z_pos_;
+    const G4double endcap_cyl_in_rad_, endcap_cyl_out_rad_, endcap_cyl_length_, endcap_cyl_z_pos_;
+    const G4double endcap_cone_in_rad_zneg_, endcap_cone_out_rad_zneg_, endcap_cone_out_rad_zpos_, endcap_cone_depth_, endcap_cone_z_pos_; 
+    const G4double gas_endcap_cone_depth_, gas_endcap_cone_z_pos_;
+
 
     // Gas properties
     G4String gas_;
