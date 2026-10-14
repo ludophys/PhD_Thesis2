@@ -11,6 +11,7 @@
 #include "nexus/Visibilities.h"
 #include "nexus/OpticalMaterialProperties.h"
 #include "nexus/CylinderPointSampler.h"
+#include "nexus/ConePointSampler.hh"
 #include "nexus/SpherePointSampler.h"
 #include "nexus/IonizationSD.h"
 //#include "Next100Th228Source.h"
@@ -66,6 +67,9 @@ using namespace nexus;
     cover_flange_out_rad_ (820./2. * mm),
     cover_flange_z_pos_  (flange_z_pos_ + flange_length_ + cover_flange_length_),
     //cover_flange_z_pos_  (2000*mm),
+
+    cover_flange1_gen_in_rad_ (265./2.*mm),
+
     // Inside cover flange1 dimensions
     //Tubs
     cover_flange1_inner_in_rad_     (640./2. * mm),
@@ -95,6 +99,8 @@ using namespace nexus;
     gas_endcap_cone_depth_    (138.97/2.*mm),
     gas_endcap_cone_z_pos_    (endcap_cyl_z_pos_ + endcap_cyl_length_ + gas_endcap_cone_depth_),
     
+    // Detector limits
+    detector_z_lim_ (gas_endcap_cone_z_pos_ + endcap_cone_depth_),
 
     // Gas properties
     gas_         ("naturalXe"),
@@ -210,6 +216,7 @@ using namespace nexus;
 
     G4VSolid* cover_flange2_final = cover_flange2_solid;
     G4VSolid* gas_union7_ = gas_union6_;
+
     for (G4int i = 0; i < n_trap; i++) {
         G4String name = "TRAP_COVER_FLANGE" + std::to_string(i);
         G4Trap* trap = new G4Trap(name, 40.5/2.*mm, 0.*deg, 0.*deg, cover_flange_length_, 118.476/2.*mm, 118.476/2.*mm, 0.*deg, cover_flange_length_, 63.764/2.*mm, 63.764/2.*mm, 0.*deg);
@@ -227,7 +234,6 @@ using namespace nexus;
     G4UnionSolid* vessel_union6_ = new G4UnionSolid("BODY_COVER_FLANGE2", vessel_union5_, cover_flange2_final, nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_));
 
     // Endcaps
-
     // Cylinders
     G4Tubs* endcap_cyl1_solid = new G4Tubs("CYL_ENDCAP1", 0., endcap_cyl_out_rad_, endcap_cyl_length_, 0.*deg, 360.*deg);
     G4UnionSolid* vessel_union7_ = new G4UnionSolid("BODY_CYL_ENDCAP1", vessel_union6_, endcap_cyl1_solid, nullptr, G4ThreeVector(0., 0., endcap_cyl_z_pos_));
@@ -239,8 +245,8 @@ using namespace nexus;
     G4Tubs* gas_endcap_cyl1_solid = new G4Tubs("GAS_CYL_ENDCAP1", 0., endcap_cyl_in_rad_, endcap_cyl_length_, 0.*deg, 360.*deg);
     G4UnionSolid* gas_union8_ = new G4UnionSolid("BODY_GAS_CYL_ENDCAP1", gas_union7_, gas_endcap_cyl1_solid, nullptr, G4ThreeVector(0., 0., endcap_cyl_z_pos_));
 
-    G4Tubs* gas_endcap_cyl2_solid = new G4Tubs("GAS_CYL_ENDCAP1", 0., endcap_cyl_in_rad_, endcap_cyl_length_, 0.*deg, 360.*deg);
-    G4UnionSolid* gas_union9_ = new G4UnionSolid("BODY_GAS_CYL_ENDCAP1", gas_union8_, gas_endcap_cyl2_solid, nullptr, G4ThreeVector(0., 0., -endcap_cyl_z_pos_));
+    G4Tubs* gas_endcap_cyl2_solid = new G4Tubs("GAS_CYL_ENDCAP2", 0., endcap_cyl_in_rad_, endcap_cyl_length_, 0.*deg, 360.*deg);
+    G4UnionSolid* gas_union9_ = new G4UnionSolid("BODY_GAS_CYL_ENDCAP2", gas_union8_, gas_endcap_cyl2_solid, nullptr, G4ThreeVector(0., 0., -endcap_cyl_z_pos_));
 
     // Endcap cones
     G4Cons* endcap_cone1_solid = new G4Cons("CONE_ENDCAP1", 0., endcap_cone_out_rad_zneg_, 0., endcap_cone_out_rad_zpos_, endcap_cone_depth_, 0.*deg, 360.*deg);
@@ -276,26 +282,153 @@ using namespace nexus;
 
     // Vertex generator in Vessel
     body_gen_  = new CylinderPointSampler(vessel_in_rad_, vessel_out_rad_, vessel_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., 0.));
-  }
+    flange1_gen_  = new CylinderPointSampler(flange_in_rad_, flange_out_rad_, flange_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., flange_z_pos_));
+    flange2_gen_  = new CylinderPointSampler(flange_in_rad_, flange_out_rad_, flange_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., -flange_z_pos_));
+    endcap_cyl1_gen_ = new CylinderPointSampler(endcap_cyl_in_rad_, endcap_cyl_out_rad_, endcap_cyl_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., endcap_cyl_z_pos_));
+    endcap_cyl2_gen_ = new CylinderPointSampler(endcap_cyl_in_rad_, endcap_cyl_out_rad_, endcap_cyl_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., -endcap_cyl_z_pos_));
+    endcap_cone1_gen_ = new ConePointSampler(endcap_cone_in_rad_zneg_, endcap_cone_out_rad_zneg_, 0., endcap_cone_out_rad_zpos_, endcap_cone_depth_, 0.*deg, 360.*deg, nullptr, G4ThreeVector(0., 0., endcap_cone_z_pos_));
+    endcap_cone2_gen_ = new ConePointSampler(0., endcap_cone_out_rad_zpos_, endcap_cone_in_rad_zneg_, endcap_cone_out_rad_zneg_, endcap_cone_depth_, 0.*deg, 360.*deg, nullptr, G4ThreeVector(0., 0., -endcap_cone_z_pos_));
+    cover_flange1_gen_ = new CylinderPointSampler(cover_flange1_gen_in_rad_, cover_flange_out_rad_, cover_flange_length_, 0.*deg, 360.*deg, nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_)); 
+    cover_flange2_gen_ = new CylinderPointSampler(cover_flange2_in_rad_, cover_flange_out_rad_, cover_flange_length_, 0.*deg, 360.*deg, nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_));
+
+}
 
     GanESSVessel::~GanESSVessel()
   {
     delete body_gen_;
+    delete flange1_gen_;
+    delete flange2_gen_;
+    delete endcap_cyl1_gen_;
+    delete endcap_cyl2_gen_;
+    delete endcap_cone1_gen_;
+    delete endcap_cone2_gen_;
+    delete cover_flange1_gen_;
+    delete cover_flange2_gen_;
   }
 
-G4ThreeVector GanESSVessel::GenerateVertex(const G4String& region) const
-{
-  if (region == "VESSEL") {
-    return body_gen_->GenerateVertex(VOLUME);
-  }
+    G4ThreeVector GanESSVessel::GenerateVertex(const G4String& region) const
+    {
+    // Generators for all the simple cylinders
+    if (region == "VESSEL") {
+        G4double rand = G4UniformRand()*(endcap_cone_z_pos_ + endcap_cyl_length_);
+        //G4double rand = G4UniformRand()*100*mm;
+        std::cout<<"edge is : "<<(endcap_cone_z_pos_ + endcap_cyl_length_)<<std::endl;
+        std::cout<<"edge2 is : "<<-endcap_cone_z_pos_ - endcap_cyl_length_<<std::endl;
+        // For 1/2 of the points a minus is added to take in account the negative parts of the detector in the z-coordinate
+        G4double parity = G4UniformRand();
+        if (parity<=0.5)
+        {
+        rand = -rand;
+        }
 
-  G4Exception(
-      "[GanESSVessel]",
-      "GenerateVertex()",
-      FatalException,
-      "Unknown vertex generation region!");
+        std::cout<<"rand is : "<<rand<<std::endl;
+        std::cout<<"interval1 :"<<-vessel_length_<<" ; "<<vessel_length_<<std::endl;
+        std::cout<<"interval2 :"<<(flange_z_pos_ - flange_length_)<<" ; "<<(flange_z_pos_ + flange_length_)<<std::endl;
+        std::cout<<"interval3 :"<<(-flange_z_pos_ - flange_length_)<<" ; "<<(-flange_z_pos_ + flange_length_)<<std::endl;
+        std::cout<<"interval4 :"<<(cover_flange_z_pos_ - cover_flange_length_)<<" ; "<<(cover_flange_z_pos_ + cover_flange_length_)<<std::endl;
+        std::cout<<"interval5 :"<<(-cover_flange_z_pos_ - cover_flange_length_)<<" ; "<<(-cover_flange_z_pos_ + cover_flange_length_)<<std::endl;
+        std::cout<<"interval6 :"<<(endcap_cyl_z_pos_ - endcap_cyl_length_)<<" ; "<<(endcap_cyl_z_pos_ + endcap_cyl_length_)<<std::endl;
+        std::cout<<"interval7 :"<<(-endcap_cyl_z_pos_ - endcap_cyl_length_)<<" ; "<<(-endcap_cyl_z_pos_ + endcap_cyl_length_)<<std::endl;
+        std::cout<<"interval8 :"<<(endcap_cone_z_pos_ - endcap_cone_depth_)<<" ; "<<(endcap_cone_z_pos_ + endcap_cone_depth_)<<std::endl;
+        std::cout<<"interval9 :"<<(-endcap_cone_z_pos_ - endcap_cone_depth_)<<" ; "<<(-endcap_cone_z_pos_ + endcap_cone_depth_)<<std::endl;
 
-  return G4ThreeVector();
-}
+        if (rand >= -vessel_length_ && rand <= vessel_length_)
+        {
+            std::cout<<"generator is : body_gen_"<<std::endl;
+            return body_gen_->GenerateVertex(VOLUME);
+        }
+        if (rand >= (flange_z_pos_ - flange_length_) &&
+            rand <= (flange_z_pos_ + flange_length_))
+        {   std::cout<<"generator is : flange1_gen_"<<std::endl;
+            return flange1_gen_->GenerateVertex(VOLUME);
+        }
+
+        if (rand >= (-flange_z_pos_ - flange_length_) &&
+            rand <= (-flange_z_pos_ + flange_length_))
+        {
+            std::cout<<"generator is : flange2_gen_"<<std::endl;
+            return flange2_gen_->GenerateVertex(VOLUME);
+        }
+
+        if (rand >= (cover_flange_z_pos_ - cover_flange_length_) &&
+            rand <= (cover_flange_z_pos_ + cover_flange_length_))
+        {
+            std::cout<<"generator is : cover_flange1_gen_"<<std::endl;
+            return cover_flange1_gen_->GenerateVertex(VOLUME);
+        }
+
+        if (rand >= (-cover_flange_z_pos_ - cover_flange_length_) &&
+            rand <= (-cover_flange_z_pos_ + cover_flange_length_))
+        {
+            std::cout<<"generator is : cover_flange2_gen_"<<std::endl;
+            return cover_flange2_gen_->GenerateVertex(VOLUME);
+        }
+
+        if (rand >= (endcap_cyl_z_pos_ - endcap_cyl_length_) &&
+            rand <= (endcap_cyl_z_pos_ + endcap_cyl_length_))
+        {
+            std::cout<<"generator is : endcap_cyl1_gen_"<<std::endl;
+            return endcap_cyl1_gen_->GenerateVertex(VOLUME);
+        }
+
+        if (rand >= (-endcap_cyl_z_pos_ - endcap_cyl_length_) &&
+            rand <= (-endcap_cyl_z_pos_ + endcap_cyl_length_))
+        {
+            std::cout<<"generator is : endcap_cyl2_gen_"<<std::endl;
+            return endcap_cyl2_gen_->GenerateVertex(VOLUME);
+        }
+
+        if (rand >= (endcap_cone_z_pos_ - endcap_cone_depth_) &&
+            rand <= (endcap_cone_z_pos_ + endcap_cone_depth_))
+        {
+            std::cout<<"generator is : endcap_cone1_gen_"<<std::endl;
+            return endcap_cone1_gen_->GenerateVertex(VOLUME);
+        }
+
+        if (rand >= (-endcap_cone_z_pos_ - endcap_cone_depth_) &&
+            rand <= (-endcap_cone_z_pos_ + endcap_cone_depth_))
+        {
+            std::cout<<"generator is : endcap_cone2_gen_"<<std::endl;
+            return endcap_cone2_gen_->GenerateVertex(VOLUME);
+        }
+    }
+    /*if (region == "VESSEL") {
+        return body_gen_->GenerateVertex(VOLUME);
+    }*/
+    /*if (region == "VESSEL_FLANGE1") {
+        return flange1_gen_->GenerateVertex(VOLUME);
+    }*/
+    /*if (region == "CYL_ENDCAP1") {
+        return endcap_cyl1_gen_->GenerateVertex(VOLUME);
+    }
+    if (region == "CYL_ENDCAP2") {
+        return endcap_cyl2_gen_->GenerateVertex(VOLUME);
+    }
+    if (region == "GAS_COVER_FLANGE1") {
+        return cover_flange1_gen_->GenerateVertex(VOLUME);
+    }
+    if (region == "GAS_COVER_FLANGE2") {
+        return cover_flange2_gen_->GenerateVertex(VOLUME);
+    }
+
+    // Generator for cones
+    if (region == "CONE_ENDCAP1") {
+        return endcap_cone1_gen_->GenerateVertex(VOLUME);
+    }
+    if (region == "CONE_ENDCAP2") {
+        return endcap_cone2_gen_->GenerateVertex(VOLUME);
+    }*/
+
+
+    
+
+    G4Exception(
+        "[GanESSVessel]",
+        "GenerateVertex()",
+        FatalException,
+        "Unknown vertex generation region!");
+
+    return G4ThreeVector();
+    }
 
 
