@@ -1,0 +1,44 @@
+volume,name,role,shape,material,rmin1,rmax1,rmin2,rmax2,hz,x,y,z,rot,ty1,tx1,tx2,ty2,tx3,tx4,polygon,comment
+MOTHER_VOLUME,MOTHER_VOLUME,base,tubs,G4_AIR,0.0,832.0,,,925.0,0.0,0.0,0.0,,,,,,,,,
+VESSEL_BODY,VESSEL_BODY,base,tubs,Steel316Ti,320.0,332.0,,,435.0,0.0,0.0,0.0,,,,,,,,,
+VESSEL_GAS_BODY,VESSEL_GAS_BODY,base,tubs,GXe,0.0,320.0,,,435.0,0.0,0.0,0.0,,,,,,,,,
+VESSEL_FLANGE1,VESSEL_FLANGE1,base,tubs,Steel316Ti,332.0,410.0,,,25.0,0.0,0.0,450.0,,,,,,,,,
+VESSEL_FLANGE2,VESSEL_FLANGE2,base,tubs,Steel316Ti,332.0,410.0,,,25.0,0.0,0.0,-450.0,,,,,,,,,
+VESSEL_INNER_FLANGE1,VESSEL_INNER_FLANGE1,base,tubs,Steel316Ti,320.0,332.0,,,20.0,0.0,0.0,455.0,,,,,,,,,
+VESSEL_INNER_FLANGE2,VESSEL_INNER_FLANGE2,base,tubs,Steel316Ti,320.0,332.0,,,20.0,0.0,0.0,-455.0,,,,,,,,,
+GAS_FLANGE1,GAS_FLANGE1,base,tubs,GXe,0.0,320.0,,,20.0,0.0,0.0,455.0,,,,,,,,,
+GAS_FLANGE2,GAS_FLANGE2,base,tubs,GXe,0.0,320.0,,,20.0,0.0,0.0,-455.0,,,,,,,,,
+COVER_FLANGE1,COVER_FLANGE1,base,tubs,Steel316Ti,332.6,410.0,,,25.0,0.0,0.0,500.0,,,,,,,,,
+GAS_COVER_FLANGE1,GAS_COVER_FLANGE1,base,tubs,GXe,0.0,332.6,,,25.0,0.0,0.0,500.0,,,,,,,,,
+GAS_COVER_FLANGE1,TUBS_CF1_INNER,subtract,tubs,GXe,320.0,332.6,,,20.0,0.0,0.0,-5.0,,,,,,,,,offset z = 491.9 (absolu) utilise comme relatif dans le code Geant4
+GAS_COVER_FLANGE1,TRGL_0_CF1_INNER,subtract,extruded,GXe,,,,,6.5,186.56962376603906,186.56962376603906,-5.0,Z-135.0,,,,,,,0:0;54.5255:-62.3;-54.5255:-62.3,offset z = 491.9 (absolu) utilise comme relatif dans le code Geant4
+GAS_COVER_FLANGE1,TRGL_1_CF1_INNER,subtract,extruded,GXe,,,,,6.5,-186.56962376603906,186.56962376603906,-5.0,Z135.0,,,,,,,0:0;54.5255:-62.3;-54.5255:-62.3,offset z = 491.9 (absolu) utilise comme relatif dans le code Geant4
+GAS_COVER_FLANGE1,TRGL_2_CF1_INNER,subtract,extruded,GXe,,,,,6.5,-186.56962376603906,-186.56962376603906,-5.0,Z-315.0,,,,,,,0:0;54.5255:-62.3;-54.5255:-62.3,offset z = 491.9 (absolu) utilise comme relatif dans le code Geant4
+GAS_COVER_FLANGE1,TRGL_3_CF1_INNER,subtract,extruded,GXe,,,,,6.5,186.56962376603906,-186.56962376603906,-5.0,Z315.0,,,,,,,0:0;54.5255:-62.3;-54.5255:-62.3,offset z = 491.9 (absolu) utilise comme relatif dans le code Geant4
+TUBS_CF1_INNER,TUBS_CF1_INNER,base,tubs,Steel316Ti,320.0,332.6,,,20.0,0.0,0.0,495.0,,,,,,,,,
+TUBS_CF1_INNER,TRGL_0_CF1_INNER,union,extruded,Steel316Ti,,,,,6.5,186.56962376603906,186.56962376603906,0.0,Z-135.0,,,,,,,0:0;54.5255:-62.3;-54.5255:-62.3,"union en (0,0,0) dans le code Geant4 (la position x,y calculee n'est pas utilisee)"
+TUBS_CF1_INNER,TRGL_1_CF1_INNER,union,extruded,Steel316Ti,,,,,6.5,-186.56962376603906,186.56962376603906,0.0,Z135.0,,,,,,,0:0;54.5255:-62.3;-54.5255:-62.3,"union en (0,0,0) dans le code Geant4 (la position x,y calculee n'est pas utilisee)"
+TUBS_CF1_INNER,TRGL_2_CF1_INNER,union,extruded,Steel316Ti,,,,,6.5,-186.56962376603906,-186.56962376603906,0.0,Z-315.0,,,,,,,0:0;54.5255:-62.3;-54.5255:-62.3,"union en (0,0,0) dans le code Geant4 (la position x,y calculee n'est pas utilisee)"
+TUBS_CF1_INNER,TRGL_3_CF1_INNER,union,extruded,Steel316Ti,,,,,6.5,186.56962376603906,-186.56962376603906,0.0,Z315.0,,,,,,,0:0;54.5255:-62.3;-54.5255:-62.3,"union en (0,0,0) dans le code Geant4 (la position x,y calculee n'est pas utilisee)"
+COVER_FLANGE2,COVER_FLANGE2,base,tubs,Steel316Ti,280.0,410.0,,,25.0,0.0,0.0,-500.0,,,,,,,,,
+COVER_FLANGE2,TRAP_COVER_FLANGE0,subtract,trap,Steel316Ti,,,,,20.25,297.5,0.0,0.0,"X90,Y-90.0",25.0,59.238,59.238,25.0,31.882,31.882,,poche soustraite a la bride ; non remplie de gaz dans le code Geant4
+COVER_FLANGE2,TRAP_COVER_FLANGE1,subtract,trap,Steel316Ti,,,,,20.25,148.75,257.643,0.0,"X90,Y-30.0",25.0,59.238,59.238,25.0,31.882,31.882,,poche soustraite a la bride ; non remplie de gaz dans le code Geant4
+COVER_FLANGE2,TRAP_COVER_FLANGE2,subtract,trap,Steel316Ti,,,,,20.25,-148.75,257.643,0.0,"X90,Y30.0",25.0,59.238,59.238,25.0,31.882,31.882,,poche soustraite a la bride ; non remplie de gaz dans le code Geant4
+COVER_FLANGE2,TRAP_COVER_FLANGE3,subtract,trap,Steel316Ti,,,,,20.25,-297.5,-6.12323e-16,0.0,"X90,Y90.0",25.0,59.238,59.238,25.0,31.882,31.882,,poche soustraite a la bride ; non remplie de gaz dans le code Geant4
+COVER_FLANGE2,TRAP_COVER_FLANGE4,subtract,trap,Steel316Ti,,,,,20.25,-148.75,-257.643,0.0,"X90,Y150.0",25.0,59.238,59.238,25.0,31.882,31.882,,poche soustraite a la bride ; non remplie de gaz dans le code Geant4
+COVER_FLANGE2,TRAP_COVER_FLANGE5,subtract,trap,Steel316Ti,,,,,20.25,148.75,-257.643,0.0,"X90,Y210.0",25.0,59.238,59.238,25.0,31.882,31.882,,poche soustraite a la bride ; non remplie de gaz dans le code Geant4
+GAS_COVER_FLANGE2,GAS_COVER_FLANGE2,base,tubs,GXe,0.0,280.0,,,25.0,0.0,0.0,-500.0,,,,,,,,,
+GAS_COVER_FLANGE2,BODY_GAS_CF2_INNER_TRAP_0,union,trap,GXe,,,,,20.25,297.5,0.0,0.0,"X90,Y-90.0",25.0,59.238,59.238,25.0,31.882,31.882,,"union en (0,0,0) dans le code Geant4 (no-op : reste dans le cylindre)"
+GAS_COVER_FLANGE2,BODY_GAS_CF2_INNER_TRAP_1,union,trap,GXe,,,,,20.25,148.75,257.643,0.0,"X90,Y-30.0",25.0,59.238,59.238,25.0,31.882,31.882,,"union en (0,0,0) dans le code Geant4 (no-op : reste dans le cylindre)"
+GAS_COVER_FLANGE2,BODY_GAS_CF2_INNER_TRAP_2,union,trap,GXe,,,,,20.25,-148.75,257.643,0.0,"X90,Y30.0",25.0,59.238,59.238,25.0,31.882,31.882,,"union en (0,0,0) dans le code Geant4 (no-op : reste dans le cylindre)"
+GAS_COVER_FLANGE2,BODY_GAS_CF2_INNER_TRAP_3,union,trap,GXe,,,,,20.25,-297.5,-6.12323e-16,0.0,"X90,Y90.0",25.0,59.238,59.238,25.0,31.882,31.882,,"union en (0,0,0) dans le code Geant4 (no-op : reste dans le cylindre)"
+GAS_COVER_FLANGE2,BODY_GAS_CF2_INNER_TRAP_4,union,trap,GXe,,,,,20.25,-148.75,-257.643,0.0,"X90,Y150.0",25.0,59.238,59.238,25.0,31.882,31.882,,"union en (0,0,0) dans le code Geant4 (no-op : reste dans le cylindre)"
+GAS_COVER_FLANGE2,BODY_GAS_CF2_INNER_TRAP_5,union,trap,GXe,,,,,20.25,148.75,-257.643,0.0,"X90,Y210.0",25.0,59.238,59.238,25.0,31.882,31.882,,"union en (0,0,0) dans le code Geant4 (no-op : reste dans le cylindre)"
+CYL_ENDCAP1,CYL_ENDCAP1,base,tubs,Steel316Ti,320.0,332.6,,,17.5,0.0,0.0,542.5,,,,,,,,,
+CYL_ENDCAP2,CYL_ENDCAP2,base,tubs,Steel316Ti,320.0,332.6,,,17.5,0.0,0.0,-542.5,,,,,,,,,
+GAS_CYL_ENDCAP1,GAS_CYL_ENDCAP1,base,tubs,GXe,0.0,320.0,,,17.5,0.0,0.0,542.5,,,,,,,,,
+GAS_CYL_ENDCAP2,GAS_CYL_ENDCAP2,base,tubs,GXe,0.0,320.0,,,17.5,0.0,0.0,-542.5,,,,,,,,,
+CONE_ENDCAP1,CONE_ENDCAP1,base,cons,Steel316Ti,320.0,332.6,0.0,50.8,75.8435,0.0,0.0,635.8435,,,,,,,,,
+CONE_ENDCAP2,CONE_ENDCAP2,base,cons,Steel316Ti,320.0,332.6,0.0,50.8,75.8435,0.0,0.0,-635.8435,X180,,,,,,,,
+GAS_CONE_ENDCAP1,GAS_CONE_ENDCAP1,base,cons,GXe,0.0,320.0,0.0,0.0,75.8435,0.0,0.0,635.8435,,,,,,,,,
+GAS_CONE_ENDCAP2,GAS_CONE_ENDCAP2,base,cons,GXe,0.0,320.0,0.0,0.0,75.8435,0.0,0.0,-635.8435,X180,,,,,,,,
