@@ -13,7 +13,7 @@
 
 #include <G4Navigator.hh>
 
-
+class G4Material;
 class G4GenericMessenger;
 class G4VPhysicalVolume;
 
@@ -34,6 +34,10 @@ namespace nexus {
 
     /// Generate a vertex within a given region of the geometry
     G4ThreeVector GenerateVertex(const G4String& region) const;
+    
+    /// Returns the logical and physical volume of the inner object
+    G4LogicalVolume* GetInternalLogicalVolume();
+    G4VPhysicalVolume* GetInternalPhysicalVolume();
 
     /// Builder
     void Construct();
@@ -42,6 +46,8 @@ namespace nexus {
     // Dimensions
     const G4double vessel_length_, vessel_in_rad_, vessel_out_rad_;
     const G4double flange_length_, flange_in_rad_, flange_out_rad_, flange_z_pos_;
+    const G4double flange_inner_length_, flange_inner_in_rad_, flange_inner_out_rad_, flange_inner_z_pos_;
+    
     const G4double cover_flange_length_, cover_flange1_in_rad_, cover_flange2_in_rad_, cover_flange_out_rad_, cover_flange_z_pos_;
     const G4double cover_flange1_gen_in_rad_;
     const G4double cover_flange1_inner_in_rad_, cover_flange1_inner_length_, cover_flange1_inner_tubs_z_pos_;
@@ -58,7 +64,15 @@ namespace nexus {
     G4String gas_;
     G4double pressure_, temperature_;
 
+    // Internal logical and physical volumes
+    G4LogicalVolume* internal_logic_vol_;
+    G4VPhysicalVolume* internal_phys_vol_;
+
+    // Materials
+    G4Material* steel_;
+
     // Vertex generators
+    CylinderPointSampler* outside_gen_;
     CylinderPointSampler* body_gen_; 
     CylinderPointSampler* flange1_gen_; 
     CylinderPointSampler* flange2_gen_;
