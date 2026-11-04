@@ -71,6 +71,7 @@ using namespace nexus;
     cover_flange_length_  (50./2. * mm),
     cover_flange1_in_rad_ (665.2/2. * mm),
     cover_flange2_in_rad_ (560./2. * mm),
+    //cover_flange2_in_rad_ (563./2. * mm),
     cover_flange_out_rad_ (820./2. * mm),
     cover_flange_z_pos_  (flange_z_pos_ + flange_length_ + cover_flange_length_),
     //cover_flange_z_pos_  (2000*mm),
@@ -90,20 +91,31 @@ using namespace nexus;
     cover_flange1_inner_box_z_pos_ (cover_flange1_inner_tubs_z_pos_),
     //cover_flange_z_pos_  (2000 * mm),
 
+    // Inside cover flange 2
+    cover_flange2_inner1_out_rad_     (640./2. * mm),
+    cover_flange2_inner1_length_     (5./2. * mm),
+    cover_flange2_inner1_tubs_z_pos_ (- cover_flange_z_pos_ + cover_flange_length_ - cover_flange2_inner1_length_),
+   
+    cover_flange2_inner2_out_rad_     (569.999/2. * mm),
+    cover_flange2_inner2_length_     (5./2. * mm),
+    cover_flange2_inner2_tubs_z_pos_ (cover_flange2_inner1_tubs_z_pos_ + cover_flange2_inner1_length_ + cover_flange2_inner2_length_),
+
     // Endcaps
     // Cylinder
     endcap_cyl_in_rad_  (640./2. * mm),
     endcap_cyl_out_rad_ (665.2/2.*mm),
-    endcap_cyl_length_  (35./2.*mm),
+    //endcap_cyl_length_  (35./2.*mm), // beofre overlaps with pmts
+    endcap_cyl_length_  (96.284/2.*mm),
+
     endcap_cyl_z_pos_   (cover_flange_z_pos_ + cover_flange_length_ + endcap_cyl_length_),
     
     // Cone
     endcap_cone_in_rad_zneg_  (endcap_cyl_in_rad_),
     endcap_cone_out_rad_zneg_ (endcap_cyl_out_rad_),
     endcap_cone_out_rad_zpos_ (101.6/2.*mm),
-    endcap_cone_depth_        (151.687/2.*mm),
+    endcap_cone_depth_        (151.687/2.*mm - endcap_cyl_length_ + 35./2.*mm),
     endcap_cone_z_pos_        (endcap_cyl_z_pos_ + endcap_cyl_length_ + endcap_cone_depth_),
-    gas_endcap_cone_depth_    (138.97/2.*mm),
+    gas_endcap_cone_depth_    (138.97/2.*mm - endcap_cyl_length_ + 35./2.*mm),
     gas_endcap_cone_z_pos_    (endcap_cyl_z_pos_ + endcap_cyl_length_ + gas_endcap_cone_depth_),
     
     // Detector limits
@@ -148,10 +160,10 @@ using namespace nexus;
 
     // Mother volume
 
-    G4Tubs* mother_volume = new G4Tubs("MOTHER_VOLUME", 0., vessel_out_rad_ + 500.*mm, vessel_length_ + 500.*mm, 0., 360.*deg);
+    G4Tubs* mother_volume = new G4Tubs("MOTHER_VOLUME", 0., vessel_out_rad_ + 200.*mm, vessel_length_ + 300.*mm, 0., 360.*deg);
     G4LogicalVolume* mother_logic_ = new G4LogicalVolume(mother_volume, air_, "MOTHER_VOLUME");
     //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), mother_logic_, "MOTHER_VOLUME", mother_logic_, false, i, true);
-
+    mother_logic_->SetVisAttributes(G4VisAttributes::GetInvisible());
     this->SetLogicalVolume(mother_logic_);
 
     // Body solid
@@ -161,14 +173,14 @@ using namespace nexus;
 
     // Gas vessel body
     G4Tubs* vessel_gas_body_solid = new G4Tubs("VESSEL_GAS_BODY", 0., vessel_in_rad_, vessel_length_, 0.*deg, 360.*deg);
-    G4LogicalVolume* vessel_gas_body_logic = new G4LogicalVolume(vessel_gas_body_solid, vessel_gas_mat, "VESSEL_GAS_BODY");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), vessel_gas_body_logic, "VESSEL_GAS_BODY", mother_logic_, false, 0, true);
+    //G4LogicalVolume* vessel_gas_body_logic = new G4LogicalVolume(vessel_gas_body_solid, vessel_gas_mat, "VESSEL_GAS_BODY");
+    //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), vessel_gas_body_logic, "VESSEL_GAS_BODY", mother_logic_, false, 0, true);
 
     // Flanges
     G4Tubs* vessel_flange1_solid = new G4Tubs("VESSEL_FLANGE1", flange_in_rad_, flange_out_rad_, flange_length_, 0.*deg, 360.*deg);
     G4LogicalVolume* vessel_flange1_logic = new G4LogicalVolume(vessel_flange1_solid, steel_, "VESSEL_FLANGE1");
     new G4PVPlacement(nullptr, G4ThreeVector(0., 0., flange_z_pos_), vessel_flange1_logic, "VESSEL_FLANGE1", mother_logic_, false, 0, true);
-
+    
     //G4UnionSolid* vessel_union1_ = new G4UnionSolid("BODY_FLANGE1", vessel_body_solid, vessel_flange1_solid, nullptr, G4ThreeVector(0., 0., flange_z_pos_));
 
     G4Tubs* vessel_flange2_solid = new G4Tubs("VESSEL_FLANGE2", flange_in_rad_, flange_out_rad_, flange_length_, 0.*deg, 360.*deg);
@@ -189,34 +201,22 @@ using namespace nexus;
     // Gas Flanges
     G4Tubs* vessel_gas_flange1_solid = new G4Tubs("GAS_FLANGE1", 0., flange_inner_in_rad_, flange_inner_length_, 0.*deg, 360.*deg);
     G4LogicalVolume* vessel_gas_flange1_logic = new G4LogicalVolume(vessel_gas_flange1_solid, vessel_gas_mat, "GAS_FLANGE1");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., flange_inner_z_pos_), vessel_gas_flange1_logic, "GAS_FLANGE1", mother_logic_, false, 0, true);
-
-    //G4UnionSolid* gas_union1_ = new G4UnionSolid("BODY_GAS_FLANGE1", vessel_gas_body_solid, vessel_gas_flange1_solid, nullptr, G4ThreeVector(0., 0., flange_z_pos_));
+    //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., flange_inner_z_pos_), vessel_gas_flange1_logic, "GAS_FLANGE1", mother_logic_, false, 0, true);
+    G4UnionSolid* gas_union1_ = new G4UnionSolid("BODY_GAS_FLANGE1", vessel_gas_body_solid, vessel_gas_flange1_solid, nullptr, G4ThreeVector(0., 0., flange_inner_z_pos_));
     
     G4Tubs* vessel_gas_flange2_solid = new G4Tubs("GAS_FLANGE2", 0., flange_inner_in_rad_, flange_inner_length_, 0.*deg, 360.*deg);
-    G4LogicalVolume* vessel_gas_flange2_logic = new G4LogicalVolume(vessel_gas_flange2_solid, vessel_gas_mat, "GAS_FLANGE2");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., - flange_inner_z_pos_), vessel_gas_flange2_logic, "GAS_FLANGE2", mother_logic_, false, 0, true);
+    //G4LogicalVolume* vessel_gas_flange2_logic = new G4LogicalVolume(vessel_gas_flange2_solid, vessel_gas_mat, "GAS_FLANGE2");
+    //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., - flange_inner_z_pos_), vessel_gas_flange2_logic, "GAS_FLANGE2", mother_logic_, false, 0, true);
+    G4UnionSolid* gas_union2_ = new G4UnionSolid("BODY_GAS_FLANGE2", gas_union1_, vessel_gas_flange2_solid, nullptr, G4ThreeVector(0., 0.,  - flange_inner_z_pos_));
 
     // Cover flange1
     G4Tubs* cover_flange1_solid = new G4Tubs("COVER_FLANGE1", cover_flange1_in_rad_, cover_flange_out_rad_, cover_flange_length_, 0.*deg, 360.*deg);
     G4LogicalVolume* cover_flange1_logic = new G4LogicalVolume(cover_flange1_solid, steel_, "COVER_FLANGE1");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_), cover_flange1_logic, "COVER_FLANGE1", mother_logic_, false, 0, true);
-
-    //G4UnionSolid* vessel_union3_ = new G4UnionSolid("BODY_COVER_FLANGE1", vessel_union2_, cover_flange1_solid, nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_));
-    
-
-    //G4UnionSolid* gas_union3_ = new G4UnionSolid("BODY_GAS_COVER_FLANGE1", gas_union2_, gas_cover_flange1_solid, nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_));
+    //decoment new G4PVPlacement(nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_), cover_flange1_logic, "COVER_FLANGE1", mother_logic_, false, 0, true);
 
     // Geometry inside cover flange1
     // Inner tuber cover flange1
     G4Tubs* tubs_cf1_inner_solid = new G4Tubs("TUBS_CF1_INNER", cover_flange1_inner_in_rad_, cover_flange1_in_rad_, cover_flange1_inner_length_, 0.*deg, 360.*deg);
-
-    //G4UnionSolid* vessel_union4_ = new G4UnionSolid("BODY_CF1_INNER_TUBS", vessel_union3_, tubs_cf1_inner_solid, nullptr, G4ThreeVector(0., 0., cover_flange1_inner_tubs_z_pos_));
-
-
-
-    //gas_union4_ = new G4SubtractionSolid("SUB_INNER_TUBS_CF1", gas_union3_, tubs_cf1_inner_solid, nullptr, G4ThreeVector(0., 0., cover_flange1_inner_tubs_z_pos_));
-    
 
 
     // Triangles inside cover flange1
@@ -238,7 +238,8 @@ using namespace nexus;
     //G4VSolid* gas_union5_ = gas_union4_;
     //G4VSolid* gas_cover_flange1_solid_cp2 = gas_cover_flange1_solid_cp1;
 
-    const G4double d_trgl = 62.30/2.;
+    //const G4double d_trgl = 62.30/2.;
+    const G4double d_trgl = 63.30/2.;
 
     for (G4int i = 0; i < n_trgl; i++) {
         G4String name = "TRGL_" + std::to_string(i) + "_CF1_INNER";
@@ -262,8 +263,11 @@ using namespace nexus;
         //new G4PVPlacement(rotation, position, trgl_cf1_inner_logic, "TRGL_CF1_INNER", mother_logic_, false, i, true);
     }
 
+    // added
+    //G4UnionSolid* cf1_union1_ = new G4UnionSolid("CF1_UNION", cover_flange1_solid, tubs_cf1_inner_solid_cp1, nullptr, G4ThreeVector(0., 0., cover_flange1_inner_tubs_z_pos_ - cover_flange_z_pos_));
+
     G4LogicalVolume* tubs_cf1_inner_logic = new G4LogicalVolume(tubs_cf1_inner_solid_cp1, steel_, "TUBS_CF1_INNER");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., cover_flange1_inner_tubs_z_pos_), tubs_cf1_inner_logic, "TUBS_CF1_INNER", mother_logic_, false, 0, true);
+    //decoment new G4PVPlacement(nullptr, G4ThreeVector(0., 0., cover_flange1_inner_tubs_z_pos_), tubs_cf1_inner_logic, "TUBS_CF1_INNER", mother_logic_, false, 0, true);
     
     // Gas cover flange1
     G4Tubs* gas_cover_flange1_solid = new G4Tubs("GAS_COVER_FLANGE1", 0., cover_flange_out_rad_, cover_flange_length_, 0.*deg, 360.*deg);
@@ -271,17 +275,34 @@ using namespace nexus;
     // Subtraction of inner tubes cover flange1 to sensitive gas volume
     //G4VSolid* gas_union4_ = gas_union3_;
     G4VSolid* gas_cover_flange1_solid_cp1 = gas_cover_flange1_solid;
-    gas_cover_flange1_solid_cp1 = new G4SubtractionSolid("SUB_CF1", gas_cover_flange1_solid, cover_flange1_solid, nullptr, G4ThreeVector(0., 0., 0.));
+    gas_cover_flange1_solid_cp1 = new G4SubtractionSolid("SUB_CF1", gas_cover_flange1_solid_cp1, cover_flange1_solid, nullptr, G4ThreeVector(0., 0., 0.));
+    
+    // added
+    //gas_cover_flange1_solid_cp1 = new G4SubtractionSolid("SUB_CF1", gas_cover_flange1_solid_cp1, cf1_union1_, nullptr, G4ThreeVector(0., 0., 0.));
 
     G4VSolid* gas_cover_flange1_solid_cp2 = gas_cover_flange1_solid_cp1;
     gas_cover_flange1_solid_cp2 = new G4SubtractionSolid("SUB_INNER_TUBS_CF1", gas_cover_flange1_solid_cp2, tubs_cf1_inner_solid_cp1, nullptr, G4ThreeVector(0., 0., cover_flange1_inner_tubs_z_pos_ - cover_flange_z_pos_));
 
-    G4LogicalVolume* gas_cover_flange1_logic = new G4LogicalVolume(gas_cover_flange1_solid_cp2, vessel_gas_mat, "GAS_COVER_FLANGE1");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_), gas_cover_flange1_logic, "GAS_COVER_FLANGE1", mother_logic_, false, 0, true);
+    //G4LogicalVolume* gas_cover_flange1_logic = new G4LogicalVolume(gas_cover_flange1_solid_cp2, vessel_gas_mat, "GAS_COVER_FLANGE1");
+    // added
+    //G4LogicalVolume* gas_cover_flange1_logic = new G4LogicalVolume(gas_cover_flange1_solid_cp1, vessel_gas_mat, "GAS_COVER_FLANGE1");
+    //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_), gas_cover_flange1_logic, "GAS_COVER_FLANGE1", mother_logic_, false, 0, true);
+    G4UnionSolid* gas_union3_ = new G4UnionSolid("BODY_GAS_CF1", gas_union2_, gas_cover_flange1_solid, nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_));
+    //added
+    //G4UnionSolid* gas_union3_ = new G4UnionSolid("BODY_GAS_CF1", gas_union2_, gas_cover_flange1_solid_cp1, nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_));
     
     // Cover flange 2
     G4Tubs* cover_flange2_solid = new G4Tubs("COVER_FLANGE2", cover_flange2_in_rad_, cover_flange_out_rad_, cover_flange_length_, 0.*deg, 360.*deg);
-    
+    G4VSolid* cover_flange2_cp1 = cover_flange2_solid;
+
+    // Inner tube subtraction
+    G4Tubs* cover_flange2_inner1_solid = new G4Tubs("COVER_FLANGE_INNER1", 0., cover_flange2_inner1_out_rad_, cover_flange2_inner1_length_, 0.*deg, 360.*deg);
+    G4Tubs* cover_flange2_inner2_solid = new G4Tubs("COVER_FLANGE_INNER2", 0., cover_flange2_inner2_out_rad_, cover_flange2_inner2_length_, 0.*deg, 360.*deg);
+
+    cover_flange2_cp1 = new G4SubtractionSolid("SUB_COVER_FLANGE_INNER1", cover_flange2_cp1, cover_flange2_inner1_solid, nullptr, G4ThreeVector(0., 0., (cover_flange2_inner1_tubs_z_pos_ + cover_flange_z_pos_)));
+    G4VSolid* cover_flange2_cp2 = cover_flange2_cp1;
+    cover_flange2_cp2 = new G4SubtractionSolid("SUB_COVER_FLANGE_INNER2", cover_flange2_cp2, cover_flange2_inner2_solid, nullptr, G4ThreeVector(0., 0.,   cover_flange2_inner2_tubs_z_pos_ + cover_flange_z_pos_));
+
     //G4UnionSolid* gas_union6_ = new G4UnionSolid("BODY_GAS_COVER_FLANGE2", gas_union5_, gas_cover_flange2_solid, nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_));
 
     // Geometry inside cover flange2
@@ -293,16 +314,17 @@ using namespace nexus;
     G4double coordX[] = {302.5, 151.25, -151.25, -302.5, -151.25, 151.25};
     G4double coordY[] = {0., 261.973, 261.973, 0., -261.973, -261.973};
 
-    const G4double d = 5.*mm;
+    //const G4double d = 5.*mm;
+    const G4double d = 8.*mm;
 
-    G4VSolid* cover_flange2_final = cover_flange2_solid;
+    G4VSolid* cover_flange2_final = cover_flange2_cp1;
    
     //G4VSolid* gas_union7_ = gas_union6_;
     //G4VSolid* gas_cover_flange2_solid_cp1 = gas_cover_flange2_solid;
 
     for (G4int i = 0; i < n_trap; i++) {
         G4String name = "TRAP_COVER_FLANGE" + std::to_string(i);
-        G4Trap* trap = new G4Trap(name, 40.5/2.*mm, 0.*deg, 0.*deg, cover_flange_length_, 118.476/2.*mm, 118.476/2.*mm, 0.*deg, cover_flange_length_, 63.764/2.*mm, 63.764/2.*mm, 0.*deg);
+        G4Trap* trap = new G4Trap(name, 40.5/2.*mm, 0.*deg, 0.*deg, cover_flange_length_ + 1*mm, 118.476/2.*mm, 118.476/2.*mm, 0.*deg, cover_flange_length_ + 1*mm, 63.764/2.*mm, 63.764/2.*mm, 0.*deg);
         G4RotationMatrix* rotation = new G4RotationMatrix();
         rotation->rotateX(90.*deg);
         rotation->rotateY(rotateY[i]*deg);
@@ -322,16 +344,17 @@ using namespace nexus;
 
     //G4UnionSolid* vessel_union6_ = new G4UnionSolid("BODY_COVER_FLANGE2", vessel_union5_, cover_flange2_final, nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_));
     G4LogicalVolume* cover_flange2_logic = new G4LogicalVolume(cover_flange2_final, steel_, "COVER_FLANGE2");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_), cover_flange2_logic, "COVER_FLANGE2", mother_logic_, false, 0., true);
+    //decoment new G4PVPlacement(nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_), cover_flange2_logic, "COVER_FLANGE2", mother_logic_, false, 0., true);
     
     // Gas cover flange 2
     G4Tubs* gas_cover_flange2_solid = new G4Tubs("GAS_COVER_FLANGE2", 0., cover_flange_out_rad_, cover_flange_length_, 0.*deg, 360.*deg);
     G4VSolid* gas_cover_flange2_solid_cp1 = gas_cover_flange2_solid;
 
-    gas_cover_flange2_solid_cp1 = new G4SubtractionSolid("SUB_GAS_COVER_FLANGE2", gas_cover_flange2_solid, cover_flange2_final, nullptr, G4ThreeVector(0., 0., 0.));
+    gas_cover_flange2_solid_cp1 = new G4SubtractionSolid("SUB_GAS_COVER_FLANGE2", gas_cover_flange2_solid_cp1, cover_flange2_final, nullptr, G4ThreeVector(0., 0., 0.));
 
-    G4LogicalVolume* gas_cover_flange2_logic = new G4LogicalVolume(gas_cover_flange2_solid_cp1, vessel_gas_mat, "GAS_COVER_FLANGE2");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_), gas_cover_flange2_logic, "GAS_COVER_FLANGE2", mother_logic_, false, 0., true);
+    //G4LogicalVolume* gas_cover_flange2_logic = new G4LogicalVolume(gas_cover_flange2_solid_cp1, vessel_gas_mat, "GAS_COVER_FLANGE2");
+    //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_), gas_cover_flange2_logic, "GAS_COVER_FLANGE2", mother_logic_, false, 0., true);
+    G4UnionSolid* gas_union4_ = new G4UnionSolid("BODY_GAS_CF2", gas_union3_, gas_cover_flange2_solid, nullptr, G4ThreeVector(0., 0., - cover_flange_z_pos_));
 
     // Endcaps
     // Cylinders
@@ -349,14 +372,16 @@ using namespace nexus;
     
     // Gas cylinders
     G4Tubs* gas_endcap_cyl1_solid = new G4Tubs("GAS_CYL_ENDCAP1", 0., endcap_cyl_in_rad_, endcap_cyl_length_, 0.*deg, 360.*deg);
-    G4LogicalVolume* gas_endcap_cyl1_logic = new G4LogicalVolume(gas_endcap_cyl1_solid, vessel_gas_mat, "GAS_CYL_ENDCAP1");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., endcap_cyl_z_pos_), gas_endcap_cyl1_logic, "GAS_CYL_ENDCAP1", mother_logic_, false, 0., true);
+    //G4LogicalVolume* gas_endcap_cyl1_logic = new G4LogicalVolume(gas_endcap_cyl1_solid, vessel_gas_mat, "GAS_CYL_ENDCAP1");
+    //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., endcap_cyl_z_pos_), gas_endcap_cyl1_logic, "GAS_CYL_ENDCAP1", mother_logic_, false, 0., true);
+    G4UnionSolid* gas_union5_ = new G4UnionSolid("BODY_GAS_ENDCAP_CYL1", gas_union4_, gas_endcap_cyl1_solid, nullptr, G4ThreeVector(0., 0., endcap_cyl_z_pos_));
 
     //G4UnionSolid* gas_union8_ = new G4UnionSolid("BODY_GAS_CYL_ENDCAP1", gas_union7_, gas_endcap_cyl1_solid, nullptr, G4ThreeVector(0., 0., endcap_cyl_z_pos_));
 
     G4Tubs* gas_endcap_cyl2_solid = new G4Tubs("GAS_CYL_ENDCAP2", 0., endcap_cyl_in_rad_, endcap_cyl_length_, 0.*deg, 360.*deg);
-    G4LogicalVolume* gas_endcap_cyl2_logic = new G4LogicalVolume(gas_endcap_cyl2_solid, vessel_gas_mat, "GAS_CYL_ENDCAP2");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., - endcap_cyl_z_pos_), gas_endcap_cyl2_logic, "GAS_CYL_ENDCAP2", mother_logic_, false, 0., true);
+    //G4LogicalVolume* gas_endcap_cyl2_logic = new G4LogicalVolume(gas_endcap_cyl2_solid, vessel_gas_mat, "GAS_CYL_ENDCAP2");
+    //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., - endcap_cyl_z_pos_), gas_endcap_cyl2_logic, "GAS_CYL_ENDCAP2", mother_logic_, false, 0., true);
+    G4UnionSolid* gas_union6_ = new G4UnionSolid("BODY_GAS_ENDCAP_CYL2", gas_union5_, gas_endcap_cyl2_solid, nullptr, G4ThreeVector(0., 0., - endcap_cyl_z_pos_));
 
     //G4UnionSolid* gas_union9_ = new G4UnionSolid("BODY_GAS_CYL_ENDCAP2", gas_union8_, gas_endcap_cyl2_solid, nullptr, G4ThreeVector(0., 0., -endcap_cyl_z_pos_));
 
@@ -384,13 +409,15 @@ using namespace nexus;
 */
 
     G4Cons* gas_endcap_cone1_solid = new G4Cons("GAS_CONE_ENDCAP1", 0., endcap_cone_in_rad_zneg_, 0., 0., endcap_cone_depth_, 0.*deg, 360.*deg);
-    G4LogicalVolume* gas_endcap_cone1_logic = new G4LogicalVolume(gas_endcap_cone1_solid, vessel_gas_mat, "GAS_CONE_ENDCAP1");
-    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., endcap_cone_z_pos_), gas_endcap_cone1_logic, "GAS_CONE_ENDCAP1", mother_logic_, false, 0, true);
+    //G4LogicalVolume* gas_endcap_cone1_logic = new G4LogicalVolume(gas_endcap_cone1_solid, vessel_gas_mat, "GAS_CONE_ENDCAP1");
+    //new G4PVPlacement(nullptr, G4ThreeVector(0., 0., endcap_cone_z_pos_), gas_endcap_cone1_logic, "GAS_CONE_ENDCAP1", mother_logic_, false, 0, true);
+    G4UnionSolid* gas_union7_ = new G4UnionSolid("BODY_GAS_ENDCAP_CONE1", gas_union6_, gas_endcap_cone1_solid, nullptr, G4ThreeVector(0., 0., endcap_cone_z_pos_));
 
     //G4UnionSolid* gas_union10_ = new G4UnionSolid("BODY_GAS_CONE1_ENDCAP", gas_union9_, gas_endcap_cone1_solid, nullptr, G4ThreeVector(0.*mm, 0.*mm, gas_endcap_cone_z_pos_));
     G4VSolid* gas_endcap_cone2_solid = gas_endcap_cone1_solid;
-    G4LogicalVolume* gas_endcap_cone2_logic = new G4LogicalVolume(gas_endcap_cone2_solid, vessel_gas_mat, "GAS_CONE_ENDCAP2");
-    new G4PVPlacement(rotation, G4ThreeVector(0.*mm, 0.*mm, - endcap_cone_z_pos_), gas_endcap_cone2_logic, "GAS_CONE_ENDCAP2", mother_logic_, false, 0., true);
+    //G4LogicalVolume* gas_endcap_cone2_logic = new G4LogicalVolume(gas_endcap_cone2_solid, vessel_gas_mat, "GAS_CONE_ENDCAP2");
+    //new G4PVPlacement(rotation, G4ThreeVector(0.*mm, 0.*mm, - endcap_cone_z_pos_), gas_endcap_cone2_logic, "GAS_CONE_ENDCAP2", mother_logic_, false, 0., true);
+    G4UnionSolid* gas_union8_ = new G4UnionSolid("BODY_GAS_ENDCAP_CONE2", gas_union7_, gas_endcap_cone2_solid, rotation, G4ThreeVector(0., 0., - endcap_cone_z_pos_));
 
     //G4UnionSolid* gas_union11_ = new G4UnionSolid("BODY_CONE2_ENDCAP", gas_union10_, gas_endcap_cone2_solid, rotation, G4ThreeVector(0.*mm, 0.*mm, -gas_endcap_cone_z_pos_));
 
@@ -398,21 +425,25 @@ using namespace nexus;
     //G4LogicalVolume* vessel_logic = new G4LogicalVolume(vessel_union10_, materials::Steel316Ti(),"VESSEL");
     //this->SetLogicalVolume(vessel_logic); // Mother volume
 
-    //G4LogicalVolume* vessel_gas_logic = new G4LogicalVolume(gas_union11_, vessel_gas_mat, "VESSEL_GAS");
-    //internal_phys_vol_ = new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), vessel_gas_logic, "VESSEL_GAS", vessel_logic, false, 0, true);
+    G4LogicalVolume* vessel_gas_logic = new G4LogicalVolume(gas_union8_, vessel_gas_mat, "VESSEL_GAS");
+    internal_phys_vol_ = new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), vessel_gas_logic, "VESSEL_GAS", mother_logic_, false, 0, true);
     
-    //internal_logic_vol_ = vessel_gas_logic;
+    internal_logic_vol_ = vessel_gas_logic;
 
     /// Set the gas volume as an ionization sensitive detector
-    //IonizationSD* ionisd = new IonizationSD("/GanESS/ACTIVE");
-    //vessel_gas_logic->SetSensitiveDetector(ionisd);
-    //G4SDManager::GetSDMpointer()->AddNewDetector(ionisd);
+    IonizationSD* ionisd = new IonizationSD("/GanESS/ACTIVE");
+    vessel_gas_logic->SetSensitiveDetector(ionisd);
+    G4SDManager::GetSDMpointer()->AddNewDetector(ionisd);
 
+    //added 
+    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., cover_flange_z_pos_), cover_flange1_logic, "COVER_FLANGE1", vessel_gas_logic, false, 0, true);
+    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., cover_flange1_inner_tubs_z_pos_), tubs_cf1_inner_logic, "TUBS_CF1_INNER", vessel_gas_logic, false, 0, true);
+    new G4PVPlacement(nullptr, G4ThreeVector(0., 0., -cover_flange_z_pos_), cover_flange2_logic, "COVER_FLANGE2", vessel_gas_logic, false, 0., true);
 
     // Vertex generator in Vessel
-    outside_gen_       = new CylinderPointSampler(0., vessel_out_rad_ + 300.*mm, vessel_length_ + 300.*mm, 0., 360.*deg, 0, G4ThreeVector(0., 0., 0.));
+    outside_gen_       = new CylinderPointSampler(0., vessel_out_rad_ + 200.*mm, vessel_length_ + 300.*mm, 0., 360.*deg, 0, G4ThreeVector(0., 0., 0.));
     body_gen_          = new CylinderPointSampler(vessel_in_rad_, vessel_out_rad_, vessel_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., 0.));
-    flange1_gen_       = new CylinderPointSampler(flange_in_rad_, flange_out_rad_, flange_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., flange_z_pos_));
+    flange1_gen_       = new CylinderPointSampler(flange_in_rad_- flange_in_rad_/2.*mm, flange_out_rad_, flange_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., flange_z_pos_));
     flange2_gen_       = new CylinderPointSampler(flange_in_rad_, flange_out_rad_, flange_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., -flange_z_pos_));
     endcap_cyl1_gen_   = new CylinderPointSampler(endcap_cyl_in_rad_, endcap_cyl_out_rad_, endcap_cyl_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., endcap_cyl_z_pos_));
     endcap_cyl2_gen_   = new CylinderPointSampler(endcap_cyl_in_rad_, endcap_cyl_out_rad_, endcap_cyl_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., -endcap_cyl_z_pos_));

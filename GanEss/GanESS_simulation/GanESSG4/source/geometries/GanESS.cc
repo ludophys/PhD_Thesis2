@@ -17,6 +17,9 @@
 
 // GanESS geometry components
 #include "GanESSVessel.hh"
+#include "GanESSFieldCage.hh"
+#include "GanESSPmtPlate.hh"
+//#include "GanESSInnerElements.hh"
 
 // G4 classes
 #include <G4GenericMessenger.hh>
@@ -42,11 +45,15 @@ using namespace nexus;
     msg_ = new G4GenericMessenger(this, "/Geometry/GanESS/", "Control commands of geometry GanESS.");
 
     vessel_ = new GanESSVessel();
+    field_cage_ = new GanESSFieldCage();
+    pmt_plate_ = new GanESSPmtPlate();
   }
 
   GanESS::~GanESS()
   {
    delete vessel_;
+   delete field_cage_;
+   delete pmt_plate_;
   }
 
   void GanESS::Construct()
@@ -61,16 +68,57 @@ using namespace nexus;
     this->SetLogicalVolume(lab_logic_);
 
     // Construct the geometry of the GanESS detector
+    // VESSEL
     vessel_->Construct();
     G4LogicalVolume* vessel_logic = vessel_->GetLogicalVolume();
+    G4LogicalVolume* vessel_internal_logic  =
+      vessel_->GetInternalLogicalVolume();
+    G4VPhysicalVolume* vessel_internal_phys =
+      vessel_->GetInternalPhysicalVolume();
+    //G4LogicalVolume* vessel_internal_logic  = vessel_->GetInternalLogicalVolume();
+    //G4VPhysicalVolume* vessel_internal_phys = vessel_->GetInternalPhysicalVolume();
     new G4PVPlacement(0,G4ThreeVector(),vessel_logic,"VESSEL",lab_logic_,false,0);
+
+    
+    //G4LogicalVolume* field_cage_logic = field_cage_->GetLogicalVolume();
+    field_cage_->SetMotherLogicalVolume(vessel_internal_logic);
+    field_cage_->SetMotherPhysicalVolume(vessel_internal_phys);
+    field_cage_->DefineMaterials();
+    field_cage_->Construct();
+    //new G4PVPlacement(0,G4ThreeVector(),field_cage_logic,"PTFE_PANEL",lab_logic_,false,0);
+    
+    pmt_plate_->SetMotherLogicalVolume(vessel_internal_logic);
+    pmt_plate_->SetMotherPhysicalVolume(vessel_internal_phys);
+    pmt_plate_->DefineMaterials();
+    pmt_plate_->Construct();
   }
 
     G4ThreeVector GanESS::GenerateVertex(const G4String& region) const
   {
     // Vertex generation in the vessel volume
-    if (region == "VESSEL") {
+    /*if (region == "VESSEL" || region == "VESSEL_FLANGE1" || region == "VESSEL_FLANGE2" || region == "CYL_ENDCAP1" || region == "CYL_ENDCAP2" || region == "CONE_ENDCAP1" || region == "CONE_ENDCAP2" || region == "GAS_COVER_FLANGE1" || region == "GAS_COVER_FLANGE2") {
       return vessel_->GenerateVertex(region);
+    }*/
+   if (region == "OUTSIDE")
+   {
+        return vessel_->GenerateVertex(region);
+   }
+
+   if (region != "OUTSIDE")
+   {
+        return vessel_->GenerateVertex(region);
+   }
+
+
+    if (region == "VESSEL"){//|| region == "VESSEL_FLANGE1" || region == "VESSEL_FLANGE2" || region == "CYL_ENDCAP1" || region == "CYL_ENDCAP2" || region == "CONE_ENDCAP1" || region == "CONE_ENDCAP2" || region == "GAS_COVER_FLANGE1" || region == "GAS_COVER_FLANGE2") {
+        std::cout<<"Vertex generation "<<vessel_->GenerateVertex(region)<<std::endl;
+
+        return vessel_->GenerateVertex(region);
+    }
+
+    if (region == "FIELD_CAGE")
+    {
+        return field_cage_->GenerateVertex(region);
     }
 
     G4Exception("[GanESS]", "GenerateVertex()", FatalException, "Unknown vertex generation region!");

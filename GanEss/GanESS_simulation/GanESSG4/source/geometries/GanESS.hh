@@ -17,6 +17,8 @@ class G4GenericMessenger;
 namespace nexus {
 
     class GanESSVessel;
+    class GanESSFieldCage;
+    class GanESSPmtPlate;
 
   class GanESS : public GeometryBase
   {
@@ -38,6 +40,8 @@ namespace nexus {
     G4LogicalVolume* lab_logic_;
 
     GanESSVessel* vessel_;
+    GanESSFieldCage* field_cage_;
+    GanESSPmtPlate* pmt_plate_;
 
     /// Messenger for the definition of control commands
     G4GenericMessenger* msg_;
