@@ -87,10 +87,12 @@ using namespace nexus;
     field_cage_->Construct();
     //new G4PVPlacement(0,G4ThreeVector(),field_cage_logic,"PTFE_PANEL",lab_logic_,false,0);
     
-    pmt_plate_->SetMotherLogicalVolume(vessel_internal_logic);
+    /*pmt_plate_->SetMotherLogicalVolume(vessel_internal_logic);
     pmt_plate_->SetMotherPhysicalVolume(vessel_internal_phys);
     pmt_plate_->DefineMaterials();
-    pmt_plate_->Construct();
+    pmt_plate_->Construct();*/
+
+
   }
 
     G4ThreeVector GanESS::GenerateVertex(const G4String& region) const
@@ -104,21 +106,46 @@ using namespace nexus;
         return vessel_->GenerateVertex(region);
    }
 
-   if (region != "OUTSIDE")
-   {
-        return vessel_->GenerateVertex(region);
-   }
-
-
-    if (region == "VESSEL"){//|| region == "VESSEL_FLANGE1" || region == "VESSEL_FLANGE2" || region == "CYL_ENDCAP1" || region == "CYL_ENDCAP2" || region == "CONE_ENDCAP1" || region == "CONE_ENDCAP2" || region == "GAS_COVER_FLANGE1" || region == "GAS_COVER_FLANGE2") {
-        std::cout<<"Vertex generation "<<vessel_->GenerateVertex(region)<<std::endl;
+    if (region == "VESSEL_BODY" || 
+        region == "VESSEL_FLANGE1" || 
+        region == "VESSEL_FLANGE2" ||
+        region == "VESSEL_INNER_FLANGE1" ||
+        region == "VESSEL_INNER_FLANGE2" ||
+        region == "CYL_ENDCAP1" ||
+        region == "CYL_ENDCAP2" ||
+        region == "CONE_ENDCAP" ||
+        region == "COVER_FLANGE1" ||
+        region == "TUBS_CF1_INNER" ||
+        region == "COVER_FLANGE2")
+    {
 
         return vessel_->GenerateVertex(region);
     }
 
-    if (region == "FIELD_CAGE")
+    if (region == "PTFE_PANEL" || 
+        region == "CROSSBAR" ||
+        region == "RINGS_Z+" || 
+        region == "RINGS_Z-" ||
+        region == "CATHODE" || 
+        region == "EL")
     {
         return field_cage_->GenerateVertex(region);
+    }
+
+    if (region == "PLATE" ||
+    region == "STEEL_TUBE1" ||
+    region == "STEEL_TUBE2" ||
+    region == "STEEL_INSIDE_TUBE" ||
+    region == "STEEL_TUBE_END" ||
+    region == "STEEL_WINDOW_TUBE1" ||
+    region == "STEEL_WINDOW_TUBE2" ||
+    region == "STEEL_WINDOW_TUBE3" ||
+    region == "STEEL_WINDOW_TUBE2_INNER1" ||
+    region == "STEEL_WINDOW_TUBE2_INNER2" ||
+    region == "SAPPHIRE_WINDOW" || 
+    region == "STEEL_CONE")
+    {
+        return pmt_plate_->GenerateVertex(region);
     }
 
     G4Exception("[GanESS]", "GenerateVertex()", FatalException, "Unknown vertex generation region!");

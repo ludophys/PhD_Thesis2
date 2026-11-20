@@ -15,6 +15,7 @@
 #include "nexus/UniformElectricDriftField.h"
 #include "nexus/XenonProperties.h"
 #include "nexus/CylinderPointSampler.h"
+#include "nexus/ConePointSampler.hh"
 #include "nexus/BoxPointSampler.h"
 #include "nexus/HexagonMeshTools.h"
 
@@ -163,16 +164,67 @@ void GanESSPmtPlate::DefineMaterials()
   tpb_->SetMaterialPropertiesTable(opticalprops::TPB());
 
   /// Steel
-  steel_ = materials::Steel316Ti();
+  //steel_ = materials::Steel316Ti();
   // In Geant4 11.0.0, a bug in treating the OpBoundaryProcess produced in the
   // surface makes the code fail. This is avoided by setting
   // an empty G4MaterialPropertiesTable of the G4Material.
-  steel_->SetMaterialPropertiesTable(new G4MaterialPropertiesTable());
+  //steel_->SetMaterialPropertiesTable(new G4MaterialPropertiesTable());
+
+
+  // AISI-304L (https://www.metalcor.de/en/datenblatt/7/)
+    G4double density = 7.9 * g/cm3;
+
+    G4Element* Fe = G4NistManager::Instance()->FindOrBuildElement("Fe");
+    G4Element* Cr = G4NistManager::Instance()->FindOrBuildElement("Cr");
+    G4Element* Ni = G4NistManager::Instance()->FindOrBuildElement("Ni");
+    G4Element* Mn = G4NistManager::Instance()->FindOrBuildElement("Mn");
+    G4Element* Si = G4NistManager::Instance()->FindOrBuildElement("Si");
+    G4Element* C  = G4NistManager::Instance()->FindOrBuildElement("C");
+    G4Element* P  = G4NistManager::Instance()->FindOrBuildElement("P");
+    G4Element* S  = G4NistManager::Instance()->FindOrBuildElement("S");
+
+    G4Material* steel_ = new G4Material(
+        "AISI304L", density, 8
+    );
+
+    steel_->AddElement(Fe, 0.6966);
+    steel_->AddElement(Cr, 0.180);
+    steel_->AddElement(Ni, 0.0925);
+    steel_->AddElement(Mn, 0.020);
+    steel_->AddElement(Si, 0.010);
+    steel_->AddElement(C,  0.0003);
+    steel_->AddElement(P,  0.00045);
+    steel_->AddElement(S,  0.00015);
 
 }
 
 void GanESSPmtPlate::Construct()
 {
+
+  // AISI-304L (https://www.metalcor.de/en/datenblatt/7/)
+    G4double density = 7.9 * g/cm3;
+
+    G4Element* Fe = G4NistManager::Instance()->FindOrBuildElement("Fe");
+    G4Element* Cr = G4NistManager::Instance()->FindOrBuildElement("Cr");
+    G4Element* Ni = G4NistManager::Instance()->FindOrBuildElement("Ni");
+    G4Element* Mn = G4NistManager::Instance()->FindOrBuildElement("Mn");
+    G4Element* Si = G4NistManager::Instance()->FindOrBuildElement("Si");
+    G4Element* C  = G4NistManager::Instance()->FindOrBuildElement("C");
+    G4Element* P  = G4NistManager::Instance()->FindOrBuildElement("P");
+    G4Element* S  = G4NistManager::Instance()->FindOrBuildElement("S");
+
+    G4Material* steel_ = new G4Material(
+        "AISI304L", density, 8
+    );
+
+    steel_->AddElement(Fe, 0.6966);
+    steel_->AddElement(Cr, 0.180);
+    steel_->AddElement(Ni, 0.0925);
+    steel_->AddElement(Mn, 0.020);
+    steel_->AddElement(Si, 0.010);
+    steel_->AddElement(C,  0.0003);
+    steel_->AddElement(P,  0.00045);
+    steel_->AddElement(S,  0.00015);
 
   //PMT R11410 importation
   pmt_.SetSensorDepth(2);
@@ -202,6 +254,16 @@ void GanESSPmtPlate::Construct()
 
   // Create the plate volume
   G4Tubs* plate_solid = new G4Tubs("PLATE", 0, plate_out_rad_, plate_length_, 0, 360*deg);
+  
+  G4double plate_gen_z_pos_ = plate_z_pos_;
+    
+  for (G4int i=0; i<2.; i++)
+    {
+      plate_gen_ = new CylinderPointSampler(0., plate_out_rad_, plate_length_, 0., 360.*deg, 0, G4ThreeVector(0., 0., plate_gen_z_pos_));
+      plate_gen_vector_.push_back(plate_gen_);
+      plate_gen_z_pos_ = -plate_gen_z_pos_;
+    }
+
   G4VSolid* plate_solid_cp1 = plate_solid;
 
   // Create the holes for the PMTs
@@ -214,8 +276,12 @@ void GanESSPmtPlate::Construct()
   G4Tubs* steel_tube1_solid = new G4Tubs("STEEL_TUBE1", steel_tube1_in_rad_, steel_tube1_out_rad_, steel_tube1_length_, 0, 360*deg);
   G4LogicalVolume* steel_tube1_logic = new G4LogicalVolume(steel_tube1_solid, steel_, "STEEL_TUBE1");
 
+
+
   G4Tubs* steel_tube2_solid = new G4Tubs("STEEL_TUBE2", steel_tube2_in_rad_, steel_tube2_out_rad_, steel_tube2_length_, 0, 360*deg);
   G4LogicalVolume* steel_tube2_logic = new G4LogicalVolume(steel_tube2_solid, steel_, "STEEL_TUBE2");
+
+
 
   G4Cons* steel_cone_solid = new G4Cons("STEEL_CONE", 0., steel_cone_out_rad_z_neg_, 0., steel_cone_out_rad_z_pos_, steel_cone_length_, 0.*deg, 360.*deg);
   G4LogicalVolume* steel_cone_logic = new G4LogicalVolume(steel_cone_solid, steel_, "STEEL_CONE");
@@ -267,10 +333,127 @@ void GanESSPmtPlate::Construct()
     // Loop on each pieces to place for 1 pmt
     for (G4int j = 0; j < sizeof(pmt_tubs_names)/sizeof(G4String); j++)
     {
+      // vectors of generators for each piece
+      if (j==0)
+      {
+        steel_tube1_gen_ = new CylinderPointSampler(steel_tube1_in_rad_, steel_tube1_out_rad_, steel_tube1_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_tube1_gen_vector_.push_back(steel_tube1_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_tube1_gen_);
+        steel_tube1_gen_ = new CylinderPointSampler(steel_tube1_in_rad_, steel_tube1_out_rad_, steel_tube1_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_tube1_gen_vector_.push_back(steel_tube1_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_tube1_gen_);
+      }
+
+      if (j==1)
+      {
+        steel_tube2_gen_ = new CylinderPointSampler(steel_tube2_in_rad_, steel_tube2_out_rad_, steel_tube2_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_tube2_gen_vector_.push_back(steel_tube2_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_tube2_gen_);
+
+        steel_tube2_gen_ = new CylinderPointSampler(steel_tube2_in_rad_, steel_tube2_out_rad_, steel_tube2_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_tube2_gen_vector_.push_back(steel_tube2_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_tube2_gen_);
+
+      }
+
+      if (j==2)
+      {
+        steel_cone_gen_  = new ConePointSampler(0., steel_cone_out_rad_z_neg_, 0., steel_cone_out_rad_z_pos_, steel_cone_length_, 0.*deg, 360.*deg, nullptr, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_cone_gen_vector_.push_back(steel_cone_gen_);
+        pmt_capsul_cone_gen_vector_.push_back(steel_cone_gen_);
+
+        steel_cone_gen_  = new ConePointSampler(0., steel_cone_out_rad_z_neg_, 0., steel_cone_out_rad_z_pos_, steel_cone_length_, 0.*deg, 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_cone_gen_vector_.push_back(steel_cone_gen_);
+        pmt_capsul_cone_gen_vector_.push_back(steel_cone_gen_);
+
+      }
+
+      if (j==3)
+      {
+        steel_inside_tube_gen_ = new CylinderPointSampler(0., steel_inside_tube_out_rad_, steel_inside_tube_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_inside_tube_gen_vector_.push_back(steel_inside_tube_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_inside_tube_gen_);
+
+        steel_inside_tube_gen_ = new CylinderPointSampler(0., steel_inside_tube_out_rad_, steel_inside_tube_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_inside_tube_gen_vector_.push_back(steel_inside_tube_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_inside_tube_gen_);
+      }
+
+      if (j==4)
+      {
+        steel_tube_end_gen_ = new CylinderPointSampler(0., steel_tube_end_out_rad_, steel_tube_end_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_tube_end_gen_vector_.push_back(steel_tube_end_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_tube_end_gen_);
+        steel_tube_end_gen_ = new CylinderPointSampler(0., steel_tube_end_out_rad_, steel_tube_end_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_tube_end_gen_vector_.push_back(steel_tube_end_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_tube_end_gen_);
+      }
+
+      if (j==5)
+      {
+        steel_window_tube1_gen_ = new CylinderPointSampler(steel_window_tube1_in_rad_, steel_window_tube1_out_rad_, steel_window_tube1_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_window_tube1_gen_vector_.push_back(steel_window_tube1_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube1_gen_);
+        steel_window_tube1_gen_ = new CylinderPointSampler(steel_window_tube1_in_rad_, steel_window_tube1_out_rad_, steel_window_tube1_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_window_tube1_gen_vector_.push_back(steel_window_tube1_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube1_gen_);
+      }
+
+      if (j==6)
+      {
+        steel_window_tube2_gen_ = new CylinderPointSampler(steel_window_tube2_in_rad_, steel_window_tube2_out_rad_, steel_window_tube2_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_window_tube2_gen_vector_.push_back(steel_window_tube2_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube2_gen_);
+        steel_window_tube2_gen_ = new CylinderPointSampler(steel_window_tube2_in_rad_, steel_window_tube2_out_rad_, steel_window_tube2_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_window_tube2_gen_vector_.push_back(steel_window_tube2_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube2_gen_);
+      }
+
+      if (j==7)
+      {
+        steel_window_tube3_gen_ = new CylinderPointSampler(steel_window_tube3_in_rad_, steel_window_tube3_out_rad_, steel_window_tube3_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_window_tube3_gen_vector_.push_back(steel_window_tube3_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube3_gen_);
+        steel_window_tube3_gen_ = new CylinderPointSampler(steel_window_tube3_in_rad_, steel_window_tube3_out_rad_, steel_window_tube3_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_window_tube3_gen_vector_.push_back(steel_window_tube3_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube3_gen_);
+      }
+
+      if (j==8)
+      {
+        steel_window_tube2_inner1_gen_ = new CylinderPointSampler(steel_window_tube2_inner1_in_rad_, steel_window_tube2_inner1_out_rad_, steel_window_tube2_inner1_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_window_tube2_inner1_gen_vector_.push_back(steel_window_tube2_inner1_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube2_inner1_gen_);
+        steel_window_tube2_inner1_gen_ = new CylinderPointSampler(steel_window_tube2_inner1_in_rad_, steel_window_tube2_inner1_out_rad_, steel_window_tube2_inner1_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_window_tube2_inner1_gen_vector_.push_back(steel_window_tube2_inner1_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube2_inner1_gen_);
+      }
+
+      if (j==9)
+      {
+        steel_window_tube2_inner2_gen_ = new CylinderPointSampler(steel_window_tube2_inner2_in_rad_, steel_window_tube2_inner2_out_rad_, steel_window_tube2_inner2_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //steel_window_tube2_inner2_gen_vector_.push_back(steel_window_tube2_inner2_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube2_inner2_gen_);
+        steel_window_tube2_inner2_gen_ = new CylinderPointSampler(steel_window_tube2_inner2_in_rad_, steel_window_tube2_inner2_out_rad_, steel_window_tube2_inner2_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //steel_window_tube2_inner2_gen_vector_.push_back(steel_window_tube2_inner2_gen_);
+        pmt_capsul_gen_vector_.push_back(steel_window_tube2_inner2_gen_);
+      }
+
+      if (j==10)
+      {
+        sapphire_window_gen_ = new CylinderPointSampler(0., sapphire_window_out_rad_, sapphire_window_length_, 0., 360.*deg, 0, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]));
+        //sapphire_window_gen_vector_.push_back(sapphire_window_gen_);
+        pmt_capsul_gen_vector_.push_back(sapphire_window_gen_);
+        sapphire_window_gen_ = new CylinderPointSampler(0., sapphire_window_out_rad_, sapphire_window_length_, 0., 360.*deg, rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], - pmt_tubs_z_pos[j]));
+        //sapphire_window_gen_vector_.push_back(sapphire_window_gen_);
+        pmt_capsul_gen_vector_.push_back(sapphire_window_gen_);
+      }
+      
+
       new G4PVPlacement(nullptr, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i], pmt_tubs_z_pos[j]), pmt_tubs_logical_volumes[j], pmt_tubs_names[j], mother_logic_, false, i, true);
       new G4PVPlacement(rotation, G4ThreeVector(X_pmt_hole[i], Y_pmt_hole[i],  - pmt_tubs_z_pos[j]), pmt_tubs_logical_volumes[j], pmt_tubs_names[j], mother_logic_, false, i, true);
 
-      std::cout<<"Placing "<<pmt_tubs_names[j]<<" for PMT "<<i<<" at position: ("<<X_pmt_hole[i]<<", "<<Y_pmt_hole[i]<<", "<<pmt_tubs_z_pos[j]<<")"<<std::endl;
+      //std::cout<<"Placing "<<pmt_tubs_names[j]<<" for PMT "<<i<<" at position: ("<<X_pmt_hole[i]<<", "<<Y_pmt_hole[i]<<", "<<pmt_tubs_z_pos[j]<<")"<<std::endl;
     
     }
 
@@ -279,24 +462,247 @@ void GanESSPmtPlate::Construct()
   G4LogicalVolume* plate_logic = new G4LogicalVolume(plate_solid_cp1, steel_, "PLATE");
   
   new G4PVPlacement(nullptr, G4ThreeVector(0., 0., plate_z_pos_), plate_logic, "PLATE", mother_logic_, false, 0, true);
-  
   new G4PVPlacement(rotation, G4ThreeVector(0., 0., - plate_z_pos_), plate_logic, "PLATE", mother_logic_, false, 1, true);
 
 }
 
  GanESSPmtPlate::~GanESSPmtPlate()
   {
+    delete plate_gen_;
+    delete steel_tube1_gen_;
+    delete steel_tube2_gen_;
+    delete steel_cone_gen_;
+    delete steel_inside_tube_gen_;
+    delete steel_tube_end_gen_;
+    delete steel_window_tube1_gen_;
+    delete steel_window_tube2_gen_;
+    delete steel_window_tube3_gen_;
+    delete steel_window_tube2_inner1_gen_;
+    delete steel_window_tube2_inner2_gen_;
+    delete sapphire_window_gen_;
 
   }
 
 G4ThreeVector GanESSPmtPlate::GenerateVertex(const G4String& region) const
 {
 
-  G4Exception(
-        "[GanESSPmtPlate]",
-        "GenerateVertex()",
-        FatalException,
-        "Unknown vertex generation region!");
+  if (region == "PLATE")
+  {
+    int index = (int)(G4UniformRand());
+    //std::cout<<index<<std::endl;
+    return pmt_capsul_gen_vector_[index]->GenerateVertex(VOLUME); 
+  }
 
-    return G4ThreeVector();
+  if (region == "STEEL_TUBE1")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 2;
+    G4int ineg = 3;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "STEEL_TUBE2")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 4;
+    G4int ineg = 5;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "STEEL_INSIDE_TUBE")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 6;
+    G4int ineg = 7;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos +  20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos +  20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "STEEL_TUBE_END")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 8;
+    G4int ineg = 9;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos +  20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos +  20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "STEEL_WINDOW_TUBE1")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 9;
+    G4int ineg = 10;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos +  20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos +  20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "STEEL_WINDOW_TUBE2")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 11;
+    G4int ineg = 12;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "STEEL_WINDOW_TUBE3")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 13;
+    G4int ineg = 14;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "STEEL_WINDOW_TUBE2_INNER1")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 15;
+    G4int ineg = 16;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "STEEL_WINDOW_TUBE2_INNER2")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 17;
+    G4int ineg = 18;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+  if (region == "SAPPHIRE_WINDOW")
+  {
+    int parity = (int)(G4UniformRand());
+    int index = (int)(G4UniformRand() * n_pmts_);
+    G4int ipos = 19;
+    G4int ineg = 20;
+
+    if (parity==0)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+    if (parity==1)
+    {
+      return pmt_capsul_gen_vector_[ipos + 20*index]->GenerateVertex(VOLUME); 
+    }
+  }
+
+
+
+
+  /*if (region == "PLATE" ||
+    region == "STEEL_TUBE1" ||
+    region == "STEEL_TUBE2" ||
+    region == "STEEL_INSIDE_TUBE" ||
+    region == "STEEL_TUBE_END" ||
+    region == "STEEL_WINDOW_TUBE1" ||
+    region == "STEEL_WINDOW_TUBE2" ||
+    region == "STEEL_WINDOW_TUBE3" ||
+    region == "STEEL_WINDOW_TUBE2_INNER1" ||
+    region == "STEEL_WINDOW_TUBE2_INNER2" ||
+    region == "SAPPHIRE_WINDOW")
+  {
+    int index = (int)(G4UniformRand() * pmt_capsul_gen_vector_.size());
+    std::cout<<"index generator is : "<<index<<std::endl;
+    std::cout<<"size array : "<< pmt_capsul_gen_vector_.size()<<std::endl;
+    if (index >= 0 && index <= pmt_capsul_gen_vector_.size() + 1)
+    {
+      //std::cout<<"enter in the loop generator"<<std::endl;
+      std::cout<<"pmt_capsul_gen_vector_["<<index<<"] is : "<<pmt_capsul_gen_vector_[index]->GenerateVertex(VOLUME)<<std::endl;
+      return pmt_capsul_gen_vector_[index]->GenerateVertex(VOLUME);
+    }
+  }*/
+
+
+  if (region == "STEEL_CONE")
+  {
+    int index = (int)(G4UniformRand() * pmt_capsul_cone_gen_vector_.size());
+    //std::cout<<"index generator is : "<<index<<std::endl;
+    //std::cout<<"size array : "<< pmt_capsul_cone_gen_vector_.size()<<std::endl;
+  
+    if (index >= 0 && index <= pmt_capsul_cone_gen_vector_.size() + 1)
+    {
+      //std::cout<<"enter in the loop generator"<<std::endl;
+      //std::cout<<"pmt_capsul_cone_gen_vector_["<<index<<"] is : "<<pmt_capsul_cone_gen_vector_[index]->GenerateVertex(VOLUME)<<std::endl;
+      return pmt_capsul_cone_gen_vector_[index]->GenerateVertex(VOLUME);
+    }
+
+  }
+  
 }

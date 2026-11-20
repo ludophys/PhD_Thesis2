@@ -23,6 +23,7 @@ namespace nexus {
 
   class CylinderPointSampler;
   class BoxPointSampler;
+  class ConePointSampler;
 
 
   class GanESSPmtPlate: public GeometryBase
@@ -90,6 +91,35 @@ namespace nexus {
 
     // PMTs
     PmtR11410 pmt_;
+
+    // Vertex generators (vectors are used for each piece of each pmt)
+    std::vector<CylinderPointSampler*> plate_gen_vector_;
+    CylinderPointSampler* plate_gen_;
+    //std::vector<CylinderPointSampler*> steel_tube1_gen_vector_;
+    CylinderPointSampler* steel_tube1_gen_;
+    //std::vector<CylinderPointSampler*> steel_tube2_gen_vector_;
+    CylinderPointSampler* steel_tube2_gen_;
+    //std::vector<ConePointSampler*> steel_cone_gen_vector_;
+    ConePointSampler* steel_cone_gen_;
+    //std::vector<CylinderPointSampler*> steel_inside_tube_gen_vector_;
+    CylinderPointSampler* steel_inside_tube_gen_;
+    //std::vector<CylinderPointSampler*> steel_tube_end_gen_vector_;
+    CylinderPointSampler* steel_tube_end_gen_;
+    //std::vector<CylinderPointSampler*> steel_window_tube1_gen_vector_;
+    CylinderPointSampler* steel_window_tube1_gen_;
+    //std::vector<CylinderPointSampler*> steel_window_tube2_gen_vector_;
+    CylinderPointSampler* steel_window_tube2_gen_;
+    //std::vector<CylinderPointSampler*> steel_window_tube3_gen_vector_;
+    CylinderPointSampler* steel_window_tube3_gen_;
+    //std::vector<CylinderPointSampler*> steel_window_tube2_inner1_gen_vector_;
+    CylinderPointSampler* steel_window_tube2_inner1_gen_;
+    //std::vector<CylinderPointSampler*> steel_window_tube2_inner2_gen_vector_;
+    CylinderPointSampler* steel_window_tube2_inner2_gen_;
+    //std::vector<CylinderPointSampler*> sapphire_window_gen_vector_;
+    CylinderPointSampler* sapphire_window_gen_;
+    std::vector<CylinderPointSampler*> pmt_capsul_gen_vector_;
+    std::vector<ConePointSampler*> pmt_capsul_cone_gen_vector_;
+
 
   };
 

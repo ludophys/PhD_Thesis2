@@ -43,7 +43,7 @@ namespace nexus {
     const G4double cathode_length_, cathode_out_rad_;
     const G4double EL_length_, EL_out_rad_, EL_z_pos_, EL_sub_length_, EL_sub_out_rad_, EL_sub_z_pos_;
     const G4double n_panel, panel_length_, panel_z_pos_;
-    const G4double n_crossbar, crossbar_width_, crossbars_z_pos_;
+    const G4double n_tpb_panel, tpb_panel_x_, tpb_panel_y_, tpb_panel_z_, tpb_panel_z_pos_;    const G4double n_crossbar, crossbar_width_, crossbars_z_pos_;
     const G4double n_small_crossbars, small_crossbars_x_, small_crossbars_y_, small_crossbars_length_, small_crossbars_z_pos_;
     const G4double n_ring, ring_length_ ,ring_in_rad_, ring_out_rad_, ring_z_pos_;
   
@@ -67,6 +67,14 @@ namespace nexus {
 
     // Vertex generator
     CylinderPointSampler* cathode_gen_;
+    CylinderPointSampler* EL_gen_;
+    CylinderPointSampler* panel_gen_;
+
+    CylinderPointSampler* gen_;
+    std::vector<CylinderPointSampler*> ring_gen_;
+    std::vector<CylinderPointSampler*> EL_gen_vector_;
+
+
 
   };
 
