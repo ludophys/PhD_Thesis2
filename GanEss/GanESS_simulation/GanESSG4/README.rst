@@ -13,5 +13,8 @@ For the analysis of geometry and generator
 
 1. launch exec_geom_runs.sh with the good parameters to send geantinos in the desired regions
    (links need to be adapted to yours)
-2. in analysis/geometry/ launch geom_gene_analysis.sh with the good parameters to compare distributions with theoretical contours
+
+2. launch convert_output.py (convert_output_full_volume.py if you just sent geantinos everywhere)
+
+3. in analysis/geometry/ launch geom_gene_analysis.sh with the good parameters to compare distributions with theoretical contours
    and check your generators
